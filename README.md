@@ -1,5 +1,11 @@
 # TrenchClaw
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Built With: Go](https://img.shields.io/badge/Built%20With-Go-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![Interface: CLI Agent](https://img.shields.io/badge/Interface-CLI%20Agent-F97316)](#quick-start)
+[![Channel: Telegram](https://img.shields.io/badge/Channel-Telegram-26A5E4?logo=telegram&logoColor=white)](./trenchclaw/docs/channels/telegram/README.md)
+[![Gateway: Enabled](https://img.shields.io/badge/Gateway-Multi--Channel-111827)](#channel-integrations)
+
 TrenchClaw is a lightweight AI agent focused on practical work: direct chat in the terminal, configurable model providers, workspace memory, skills, scheduled jobs, and message-based integrations such as Telegram and Discord.
 
 This repository contains the TrenchClaw project workspace and the agent core in [`trenchclaw/`](./trenchclaw).
@@ -122,19 +128,9 @@ If setup is incomplete, the CLI redirects you to onboarding first.
 
 TrenchClaw can operate across external messaging platforms through the gateway.
 
-Documented channels include:
+Documented channel:
 
 - Telegram
-- Discord
-- Slack
-- Matrix
-- LINE
-- QQ
-- Weixin
-- DingTalk
-- Feishu
-- OneBot
-- MaixCam
 
 Start the gateway with:
 
