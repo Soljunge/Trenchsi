@@ -7,7 +7,7 @@
 [![Gateway: Enabled](https://img.shields.io/badge/Gateway-Multi--Channel-111827)](#channel-integrations)
 
 <p align="center">
-  <img src="./trenchclaw/Capul%20unui%20cyborg%20%C3%AEn%20contrast%20viu.png" alt="TrenchClaw cyborg avatar" width="260" />
+  <img src="./trenchclaw/assets/agent-avatar.png" alt="TrenchClaw cyborg avatar" width="260" />
 </p>
 
 TrenchClaw is a lightweight AI agent focused on practical work: direct chat in the terminal, configurable model providers, workspace memory, skills, scheduled jobs, and message-based integrations such as Telegram and Discord.
