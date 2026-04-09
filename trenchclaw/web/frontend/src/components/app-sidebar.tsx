@@ -251,8 +251,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="border-sidebar-border/70 from-sidebar via-sidebar-accent/20 to-sidebar rounded-lg border bg-gradient-to-br px-2.5 py-2 shadow-[0_10px_30px_-20px_rgba(0,0,0,0.65)]">
           <div className="flex items-center gap-1.5">
             <span className="relative flex size-2 shrink-0">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500/70" />
-              <span className="relative inline-flex size-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.95)]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-500/70" />
+              <span className="relative inline-flex size-2 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.95)]" />
             </span>
             <span className="text-sidebar-foreground text-[10px] font-semibold tracking-[0.18em] uppercase">
               CT Version
