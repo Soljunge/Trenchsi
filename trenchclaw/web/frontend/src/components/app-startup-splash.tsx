@@ -1,11 +1,15 @@
 import {
+  IconBrain,
   IconDeviceDesktop,
   IconFolder,
+  IconMessageCircle2,
   IconUser,
 } from "@tabler/icons-react"
+import { Link } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 
 import { getHostInfo, type HostInfo } from "@/api/system"
+import { Button } from "@/components/ui/button"
 
 const shellLaunchSplashCookie = "trenchlaw_shell_launch"
 
@@ -93,6 +97,20 @@ export function AppStartupSplash() {
               {hostInfo.documents_path}
             </span>
           </div>
+        </div>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Button size="sm" variant="outline" asChild>
+            <Link to="/">
+              <IconMessageCircle2 className="size-4" />
+              <span>Chat</span>
+            </Link>
+          </Button>
+          <Button size="sm" asChild>
+            <Link to="/agent/learned">
+              <IconBrain className="size-4" />
+              <span>Learned</span>
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

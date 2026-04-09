@@ -219,9 +219,12 @@ export function AppHeader() {
           </a>
         </Button>
 
-        <Button variant="ghost" size="icon" className="size-8" asChild>
+        <Button variant="outline" size="sm" className="h-8 gap-2 px-3" asChild>
           <Link to="/agent/learned" aria-label={t("navigation.learned")}>
-            <IconBrain className="size-4.5" />
+            <IconBrain className="size-4" />
+            <span className="text-xs font-semibold">
+              {t("navigation.learned")}
+            </span>
           </Link>
         </Button>
 
