@@ -262,14 +262,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <span className="relative inline-flex size-2 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.95)]" />
             </span>
             <span className="text-sidebar-foreground text-[10px] font-semibold tracking-[0.18em] uppercase">
-              CT Version
+              Current Build
             </span>
           </div>
           <p className="text-sidebar-foreground mt-1 text-xs font-medium">
-            {appStatus?.version
-              ? `CT version ${appStatus.version}`
-              : "CT version 001"}
+            {formatVersionLabel(appStatus)}
           </p>
+          {appStatus?.git_commit || appStatus?.repo_head_commit ? (
+            <div className="mt-1 space-y-0.5 text-[10px] text-sidebar-foreground/75">
+              {appStatus?.git_commit ? (
+                <div className="font-mono">Build {appStatus.git_commit}</div>
+              ) : null}
+              {appStatus?.repo_head_commit ? (
+                <div className="font-mono">Repo {appStatus.repo_head_commit}</div>
+              ) : null}
+            </div>
+          ) : null}
           {appStatus?.update_available ? (
             <div className="mt-2 rounded-md border border-amber-300/60 bg-amber-500/10 px-2 py-1.5 text-[11px] leading-4 text-amber-200">
               <div className="font-semibold tracking-[0.12em] uppercase">
@@ -290,4 +298,32 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarRail />
     </Sidebar>
   )
+}
+
+function formatVersionLabel(
+  appStatus:
+    | {
+        version?: string
+        git_commit?: string
+        repo_head_commit?: string
+      }
+    | undefined,
+) {
+  if (!appStatus?.version) {
+    return "Version unknown"
+  }
+
+  if (appStatus.version !== "dev") {
+    return `Version ${appStatus.version}`
+  }
+
+  if (appStatus.git_commit) {
+    return `Dev build (${appStatus.git_commit})`
+  }
+
+  if (appStatus.repo_head_commit) {
+    return `Dev build (repo ${appStatus.repo_head_commit})`
+  }
+
+  return "Dev build"
 }

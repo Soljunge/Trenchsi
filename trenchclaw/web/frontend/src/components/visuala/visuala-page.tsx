@@ -47,6 +47,7 @@ export function VisualaPage() {
   const [showThinking, setShowThinking] = useState(true)
   const [showTools, setShowTools] = useState(true)
   const [showMemory, setShowMemory] = useState(true)
+  const [showAgentIcon, setShowAgentIcon] = useState(true)
   const [showCustomize, setShowCustomize] = useState(false)
 
   const recentLogs = logs.slice(-MAX_EVENTS).reverse()
@@ -112,6 +113,11 @@ export function VisualaPage() {
                     checked={showMemory}
                     onCheckedChange={setShowMemory}
                   />
+                  <ToggleRow
+                    label={t("pages.agent.visuala.agent_icon.title")}
+                    checked={showAgentIcon}
+                    onCheckedChange={setShowAgentIcon}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -123,10 +129,12 @@ export function VisualaPage() {
               <div>
                 <CardTitle>{t("pages.agent.visuala.hero_title")}</CardTitle>
               </div>
-              <AgentIconDisplay
-                title={t("pages.agent.visuala.agent_icon.title")}
-                imageAlt={t("pages.agent.visuala.agent_icon.alt")}
-              />
+              {showAgentIcon ? (
+                <AgentIconDisplay
+                  title={t("pages.agent.visuala.agent_icon.title")}
+                  imageAlt={t("pages.agent.visuala.agent_icon.alt")}
+                />
+              ) : null}
             </CardHeader>
             <CardContent>
               <div className="grid gap-3 md:grid-cols-5">

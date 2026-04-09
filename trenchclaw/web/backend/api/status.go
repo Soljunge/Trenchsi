@@ -33,7 +33,7 @@ func (h *Handler) handleStatus(w http.ResponseWriter, r *http.Request) {
 
 	resp := appStatusResponse{
 		Status:         "ok",
-		Version:        config.FormatVersion(),
+		Version:        config.GetVersion(),
 		Uptime:         timeSince(h.startTime),
 		GitCommit:      currentCommit,
 		RepoHeadCommit: repoHeadCommit,
