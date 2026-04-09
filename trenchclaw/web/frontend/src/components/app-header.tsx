@@ -1,4 +1,5 @@
 import {
+  IconBrain,
   IconBook,
   IconLoader2,
   IconMenu2,
@@ -216,6 +217,12 @@ export function AppHeader() {
           <a href="https://docs.trenchlaw.io" target="_blank" rel="noreferrer">
             <IconBook className="size-4.5" />
           </a>
+        </Button>
+
+        <Button variant="ghost" size="icon" className="size-8" asChild>
+          <Link to="/agent/learned" aria-label={t("navigation.learned")}>
+            <IconBrain className="size-4.5" />
+          </Link>
         </Button>
 
         {isVisualaPage ? (

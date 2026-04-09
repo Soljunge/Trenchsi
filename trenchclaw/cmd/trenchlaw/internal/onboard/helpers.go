@@ -23,16 +23,16 @@ import (
 
 const (
 	onboardANSIReset    = "\033[0m"
-	onboardANSITitle    = "\033[1;38;2;120;196;88m"
-	onboardANSIDim      = "\033[38;2;140;146;125m"
-	onboardANSIActive   = "\033[1;38;2;120;196;88m"
-	onboardANSIInactive = "\033[1;38;2;96;168;76m"
-	onboardANSIRail     = "\033[38;2;140;146;125m"
-	onboardANSIStrong   = "\033[1;38;2;120;196;88m"
+	onboardANSITitle    = "\033[1;38;2;249;115;22m"
+	onboardANSIDim      = "\033[38;2;214;122;76m"
+	onboardANSIActive   = "\033[1;38;2;234;88;12m"
+	onboardANSIInactive = "\033[1;38;2;251;146;60m"
+	onboardANSIRail     = "\033[38;2;251;146;60m"
+	onboardANSIStrong   = "\033[1;38;2;249;115;22m"
 	onboardANSIBgClear  = "\033[H\033[2J"
 )
 
-var onboardTUISelectedSkillColor = tcell.NewHexColor(0x78c458)
+var onboardTUISelectedSkillColor = tcell.NewHexColor(0xf97316)
 
 var onboardInput io.Reader = os.Stdin
 var onboardOutput io.Writer = os.Stdout

@@ -1,10 +1,12 @@
 import {
+  IconBrain,
   IconFileInfo,
   IconLoader2,
   IconPlus,
   IconTrash,
 } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
 import { type ChangeEvent, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ReactMarkdown from "react-markdown"
@@ -125,6 +127,12 @@ export function SkillsPage() {
         title="Skills🪖"
         children={
           <>
+            <Button variant="outline" asChild>
+              <Link to="/agent/learned">
+                <IconBrain className="size-4" />
+                {t("navigation.learned")}
+              </Link>
+            </Button>
             <input
               ref={importInputRef}
               type="file"

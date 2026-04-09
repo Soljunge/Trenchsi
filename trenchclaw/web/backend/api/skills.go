@@ -15,7 +15,24 @@ import (
 )
 
 type skillSupportResponse struct {
-	Skills []skills.SkillInfo `json:"skills"`
+	Skills []skillSupportItem `json:"skills"`
+}
+
+type skillOriginMetadata struct {
+	Registry         string `json:"registry,omitempty"`
+	Slug             string `json:"slug,omitempty"`
+	InstalledVersion string `json:"installed_version,omitempty"`
+	InstalledAt      int64  `json:"installed_at,omitempty"`
+}
+
+type skillSupportItem struct {
+	Name        string               `json:"name"`
+	Path        string               `json:"path"`
+	Source      string               `json:"source"`
+	Description string               `json:"description"`
+	Learned     bool                 `json:"learned"`
+	LearnedVia  string               `json:"learned_via,omitempty"`
+	Origin      *skillOriginMetadata `json:"origin,omitempty"`
 }
 
 type skillDetailResponse struct {
@@ -50,7 +67,7 @@ func (h *Handler) handleListSkills(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(skillSupportResponse{
-		Skills: loader.ListSkills(),
+		Skills: buildSkillSupportItems(loader.ListSkills()),
 	})
 }
 
@@ -195,6 +212,54 @@ func newSkillsLoader(workspace string) *skills.SkillsLoader {
 		filepath.Join(globalConfigDir(), "skills"),
 		builtinSkillsDir(),
 	)
+}
+
+func buildSkillSupportItems(items []skills.SkillInfo) []skillSupportItem {
+	result := make([]skillSupportItem, 0, len(items))
+	for _, skill := range items {
+		entry := skillSupportItem{
+			Name:        skill.Name,
+			Path:        skill.Path,
+			Source:      skill.Source,
+			Description: skill.Description,
+			Learned:     skill.Source == "workspace",
+		}
+
+		if entry.Learned {
+			entry.LearnedVia = "workspace"
+			if origin, err := readSkillOrigin(filepath.Dir(skill.Path)); err == nil && origin != nil {
+				entry.LearnedVia = "registry"
+				entry.Origin = origin
+			}
+		}
+
+		result = append(result, entry)
+	}
+	return result
+}
+
+func readSkillOrigin(skillDir string) (*skillOriginMetadata, error) {
+	data, err := os.ReadFile(filepath.Join(skillDir, ".skill-origin.json"))
+	if err != nil {
+		return nil, err
+	}
+
+	var raw struct {
+		Registry         string `json:"registry"`
+		Slug             string `json:"slug"`
+		InstalledVersion string `json:"installed_version"`
+		InstalledAt      int64  `json:"installed_at"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return nil, err
+	}
+
+	return &skillOriginMetadata{
+		Registry:         raw.Registry,
+		Slug:             raw.Slug,
+		InstalledVersion: raw.InstalledVersion,
+		InstalledAt:      raw.InstalledAt,
+	}, nil
 }
 
 func normalizeImportedSkillName(filename string, content []byte) (string, error) {

@@ -3,6 +3,14 @@ export interface SkillSupportItem {
   path: string
   source: "workspace" | "global" | "builtin" | string
   description: string
+  learned: boolean
+  learned_via?: "workspace" | "registry" | string
+  origin?: {
+    registry?: string
+    slug?: string
+    installed_version?: string
+    installed_at?: number
+  }
 }
 
 export interface SkillDetailResponse extends SkillSupportItem {

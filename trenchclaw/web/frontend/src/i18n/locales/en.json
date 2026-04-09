@@ -6,6 +6,7 @@
     "credentials": "Credentials",
     "agent_group": "Agent",
     "skills": "Skills",
+    "learned": "Learned",
     "tools": "Tools",
     "visuala": "Visuala",
     "services": "Services",
@@ -381,6 +382,25 @@
         "path": "Skill Path",
         "no_description": "No description provided."
       },
+      "learned": {
+        "description": "Learned skills are the workspace skills the agent gained over time, including imported skills and registry installs.",
+        "count": "{{count}} learned",
+        "empty": "No learned skills yet. Add or install a skill through the agent and it will appear here.",
+        "view": "View",
+        "viewer_title": "Learned Skill Content",
+        "viewer_description": "Inspect the current learned skill and any command hints it contains.",
+        "loading_detail": "Loading learned skill content...",
+        "load_detail_error": "Failed to load learned skill content.",
+        "path": "Skill Path",
+        "source": "Source",
+        "learned_via": "Learned via",
+        "registry": "Registry",
+        "manual": "manual",
+        "installed_at": "Installed: {{value}}",
+        "no_description": "No description provided.",
+        "command_hints_title": "Command Hints",
+        "command_hints_description": "Commands detected in this learned skill, including `npx`-style tools when present."
+      },
       "tools": {
         "description": "This view reflects whether each agent tool is enabled, disabled, or blocked by a missing prerequisite.",
         "empty": "No tools are available.",
@@ -415,6 +435,11 @@
       "visuala": {
         "hero_title": "Visuala agent activity",
         "hero_description": "A live visual board built from gateway activity so users can see what the agent is doing right now.",
+        "agent_icon": {
+          "title": "Agent icon",
+          "subtitle": "Visual identity for the current TrenchClaw agent.",
+          "alt": "TrenchClaw agent icon"
+        },
         "customize_title": "Customize view",
         "now_title": "Current focus",
         "now_description": "The latest signal from the running agent loop.",

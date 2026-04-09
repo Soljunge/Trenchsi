@@ -1,5 +1,6 @@
 import {
   IconArrowRight,
+  IconBrain,
   IconDeviceDesktop,
   IconFolder,
   IconMessageCircle2,
@@ -296,6 +297,14 @@ export function ChatEmptyState({
               <p className="text-muted-foreground max-w-xl text-sm leading-7">
                 {t("chat.empty.notRunningDescription")}
               </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button asChild size="sm" variant="outline" className="gap-2 px-4">
+                  <Link to="/agent/learned">
+                    <IconBrain className="h-4 w-4" />
+                    {t("navigation.learned")}
+                  </Link>
+                </Button>
+              </div>
             </div>
 
             <div className="grid gap-3">

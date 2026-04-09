@@ -9,6 +9,8 @@ import type { ComponentType } from "react"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import agentAvatarUrl from "../../../../../assets/agent-avatar.png"
+
 import { PageHeader } from "@/components/page-header"
 import {
   Card,
@@ -121,7 +123,12 @@ export function VisualaPage() {
               <CardTitle>{t("pages.agent.visuala.hero_title")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 md:grid-cols-5">
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1.2fr)_repeat(5,minmax(0,1fr))]">
+                <AgentIconCard
+                  title={t("pages.agent.visuala.agent_icon.title")}
+                  subtitle={t("pages.agent.visuala.agent_icon.subtitle")}
+                  imageAlt={t("pages.agent.visuala.agent_icon.alt")}
+                />
                 <SimpleBox
                   label={t("pages.agent.visuala.metrics.gateway")}
                   value={t(`pages.agent.visuala.gateway_state.${state}`)}
@@ -275,6 +282,44 @@ function ToggleRow({
       <span>{label}</span>
       <Switch checked={checked} onCheckedChange={onCheckedChange} size="sm" />
     </label>
+  )
+}
+
+function AgentIconCard({
+  title,
+  subtitle,
+  imageAlt,
+}: {
+  title: string
+  subtitle: string
+  imageAlt: string
+}) {
+  const [imageFailed, setImageFailed] = useState(false)
+
+  return (
+    <div className="border border-border px-3 py-3 md:row-span-1">
+      <div className="flex items-center gap-3">
+        <div className="from-amber-100 via-orange-50 to-white flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br shadow-[0_10px_30px_-18px_rgba(194,65,12,0.7)]">
+          {imageFailed ? (
+            <span className="text-2xl">🪖</span>
+          ) : (
+            <img
+              src={agentAvatarUrl}
+              alt={imageAlt}
+              className="size-full object-cover"
+              onError={() => setImageFailed(true)}
+            />
+          )}
+        </div>
+        <div className="min-w-0">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-orange-700">
+            {title}
+          </div>
+          <div className="mt-2 text-base font-medium">TrenchClaw</div>
+          <div className="text-muted-foreground mt-1 text-xs">{subtitle}</div>
+        </div>
+      </div>
+    </div>
   )
 }
 

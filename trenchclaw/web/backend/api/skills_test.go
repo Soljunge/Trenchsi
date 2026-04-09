@@ -111,6 +111,95 @@ func TestHandleListSkills(t *testing.T) {
 	if gotSkills["builtin-skill"] != "builtin" {
 		t.Fatalf("builtin-skill source = %q, want builtin", gotSkills["builtin-skill"])
 	}
+
+	for _, skill := range resp.Skills {
+		switch skill.Name {
+		case "workspace-skill":
+			if !skill.Learned {
+				t.Fatal("workspace-skill should be marked as learned")
+			}
+			if skill.LearnedVia != "workspace" {
+				t.Fatalf("workspace-skill learned_via = %q, want workspace", skill.LearnedVia)
+			}
+		case "global-skill", "builtin-skill":
+			if skill.Learned {
+				t.Fatalf("%s should not be marked as learned", skill.Name)
+			}
+		}
+	}
+}
+
+func TestHandleListSkillsIncludesRegistryOriginForLearnedSkill(t *testing.T) {
+	configPath, cleanup := setupOAuthTestEnv(t)
+	defer cleanup()
+
+	cfg, err := config.LoadConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadConfig() error = %v", err)
+	}
+
+	workspace := filepath.Join(t.TempDir(), "workspace")
+	cfg.Agents.Defaults.Workspace = workspace
+	if err := config.SaveConfig(configPath, cfg); err != nil {
+		t.Fatalf("SaveConfig() error = %v", err)
+	}
+
+	skillDir := filepath.Join(workspace, "skills", "learned-registry-skill")
+	if err := os.MkdirAll(skillDir, 0o755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+	if err := os.WriteFile(
+		filepath.Join(skillDir, "SKILL.md"),
+		[]byte("---\nname: learned-registry-skill\ndescription: Learned from registry\n---\n"),
+		0o644,
+	); err != nil {
+		t.Fatalf("WriteFile(SKILL.md) error = %v", err)
+	}
+	if err := os.WriteFile(
+		filepath.Join(skillDir, ".skill-origin.json"),
+		[]byte(`{"version":1,"registry":"clawhub","slug":"learned-registry-skill","installed_version":"1.2.3","installed_at":1744214400000}`),
+		0o644,
+	); err != nil {
+		t.Fatalf("WriteFile(.skill-origin.json) error = %v", err)
+	}
+
+	h := NewHandler(configPath)
+	mux := http.NewServeMux()
+	h.RegisterRoutes(mux)
+
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/skills", nil)
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", rec.Code, http.StatusOK, rec.Body.String())
+	}
+
+	var resp skillSupportResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("Unmarshal() error = %v", err)
+	}
+
+	for _, skill := range resp.Skills {
+		if skill.Name != "learned-registry-skill" {
+			continue
+		}
+		if !skill.Learned {
+			t.Fatal("learned-registry-skill should be marked as learned")
+		}
+		if skill.LearnedVia != "registry" {
+			t.Fatalf("learned-registry-skill learned_via = %q, want registry", skill.LearnedVia)
+		}
+		if skill.Origin == nil {
+			t.Fatal("learned-registry-skill origin should be present")
+		}
+		if skill.Origin.Registry != "clawhub" || skill.Origin.InstalledVersion != "1.2.3" {
+			t.Fatalf("unexpected origin metadata: %#v", skill.Origin)
+		}
+		return
+	}
+
+	t.Fatal("learned-registry-skill not found in response")
 }
 
 func TestHandleGetSkill(t *testing.T) {
