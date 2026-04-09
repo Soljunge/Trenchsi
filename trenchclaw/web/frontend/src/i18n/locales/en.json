@@ -445,6 +445,10 @@
           "timeline": "Timeline",
           "nothing_selected": "Nothing is selected. Turn on at least one section to show the view."
         },
+        "flow": {
+          "new_agent": "New Agent",
+          "memory_target": "Memory"
+        },
         "phase": {
           "booting": "Connecting",
           "thinking": "Thinking",

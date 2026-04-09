@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
+import { useChatModels } from "@/hooks/use-chat-models"
 import { useGateway } from "@/hooks/use-gateway"
 import { useGatewayLogs } from "@/hooks/use-gateway-logs"
 import { cn } from "@/lib/utils"
@@ -37,6 +38,7 @@ export function VisualaPage() {
   const { t } = useTranslation()
   const { state } = useGateway()
   const { logs } = useGatewayLogs()
+  const { defaultModel } = useChatModels({ isConnected: state === "running" })
   const [showSummary, setShowSummary] = useState(true)
   const [showFlow, setShowFlow] = useState(true)
   const [showTimeline, setShowTimeline] = useState(true)
@@ -51,6 +53,7 @@ export function VisualaPage() {
   )
 
   const metrics = summarizeLogs(logs, state)
+  const providerLabel = describeProvider(defaultModel)
 
   useEffect(() => {
     const handleToggle = () => {
@@ -168,13 +171,24 @@ export function VisualaPage() {
             >
               {showFlow ? (
                 <div className="space-y-4">
-                  <SimpleFlowBox
-                    title={t("pages.agent.visuala.now_title")}
-                    value={t(`pages.agent.visuala.phase.${metrics.phase}`)}
-                    tone={metrics.phaseTone}
-                  />
-                  <div className="flex justify-center">
-                    <div className="bg-border h-10 w-px" />
+                  <div className="grid gap-3 lg:grid-cols-[1fr_40px_1fr_40px_1fr] lg:items-center">
+                    <SimpleFlowBox
+                      title={t("pages.agent.visuala.now_title")}
+                      value={t(`pages.agent.visuala.phase.${metrics.phase}`)}
+                      tone={metrics.phaseTone}
+                    />
+                    <FlowConnector />
+                    <SimpleFlowBox
+                      title={t("pages.agent.visuala.flow.new_agent")}
+                      value={providerLabel}
+                      tone="tool"
+                    />
+                    <FlowConnector />
+                    <SimpleFlowBox
+                      title={t("pages.agent.visuala.flow.memory_target")}
+                      value={metrics.memoryTarget}
+                      tone="io"
+                    />
                   </div>
                   <SimpleFlowBox
                     title={t("pages.agent.visuala.cards.io")}
@@ -282,6 +296,14 @@ function SimpleFlowBox({
         {title}
       </div>
       <div className="mt-2 text-sm font-medium">{value}</div>
+    </div>
+  )
+}
+
+function FlowConnector() {
+  return (
+    <div className="hidden items-center justify-center lg:flex">
+      <div className="bg-border h-px w-full" />
     </div>
   )
 }
@@ -412,6 +434,7 @@ function summarizeLogs(logs: string[], gatewayState: string) {
   const summary = latest
     ? latest
     : "No live gateway activity has been captured yet."
+  const memoryTarget = describeMemoryTarget(logs)
 
   const memoryState: "active" | "saved" | "idle" =
     latest &&
@@ -435,6 +458,7 @@ function summarizeLogs(logs: string[], gatewayState: string) {
     ioCount,
     memoryCount,
     memoryState,
+    memoryTarget,
     phase,
     phaseTone,
     summary,
@@ -450,4 +474,57 @@ function countMatches(lines: string[], patterns: string[]) {
 function containsAny(line: string, patterns: string[]) {
   const lower = line.toLowerCase()
   return patterns.some((pattern) => lower.includes(pattern))
+}
+
+function describeProvider(
+  model: {
+    model_name?: string
+    model?: string
+    auth_method?: string
+    api_base?: string
+  } | null,
+) {
+  if (!model) {
+    return "No provider"
+  }
+
+  const apiBase = model.api_base?.toLowerCase() ?? ""
+  const modelId = model.model?.toLowerCase() ?? ""
+
+  if (model.auth_method === "oauth") {
+    return "OAuth provider"
+  }
+  if (model.auth_method === "local" || apiBase.includes("localhost")) {
+    return "Local provider"
+  }
+  if (apiBase.includes("openrouter") || modelId.includes("openrouter")) {
+    return "OpenRouter"
+  }
+  if (apiBase.includes("openai") || modelId.includes("openai")) {
+    return "OpenAI"
+  }
+  if (apiBase.includes("anthropic") || modelId.includes("anthropic")) {
+    return "Anthropic"
+  }
+
+  return model.model_name || model.model || "Configured provider"
+}
+
+function describeMemoryTarget(logs: string[]) {
+  const joined = logs.slice(-20).join("\n").toLowerCase()
+
+  if (joined.includes("workspace")) {
+    return "Workspace memory"
+  }
+  if (joined.includes("session")) {
+    return "Session store"
+  }
+  if (joined.includes("jsonl")) {
+    return "JSONL memory"
+  }
+  if (joined.includes("memory") || joined.includes("saved")) {
+    return "Memory store"
+  }
+
+  return "Waiting for memory write"
 }
