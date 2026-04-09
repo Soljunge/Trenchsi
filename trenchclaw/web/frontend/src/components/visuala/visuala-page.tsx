@@ -6,6 +6,7 @@ import {
   IconTerminal2,
 } from "@tabler/icons-react"
 import type { ComponentType } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { PageHeader } from "@/components/page-header"
@@ -15,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
 import { useGateway } from "@/hooks/use-gateway"
 import { useGatewayLogs } from "@/hooks/use-gateway-logs"
 import { cn } from "@/lib/utils"
@@ -35,6 +37,12 @@ export function VisualaPage() {
   const { t } = useTranslation()
   const { state } = useGateway()
   const { logs } = useGatewayLogs()
+  const [showSummary, setShowSummary] = useState(true)
+  const [showFlow, setShowFlow] = useState(true)
+  const [showTimeline, setShowTimeline] = useState(true)
+  const [showThinking, setShowThinking] = useState(true)
+  const [showTools, setShowTools] = useState(true)
+  const [showMemory, setShowMemory] = useState(true)
 
   const recentLogs = logs.slice(-MAX_EVENTS).reverse()
   const visualEvents = recentLogs.map((line, index) =>
@@ -51,6 +59,47 @@ export function VisualaPage() {
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 pb-8">
           <Card className="border border-border/60" size="sm">
             <CardHeader>
+              <CardTitle>{t("pages.agent.visuala.customize_title")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 md:grid-cols-3">
+                <ToggleRow
+                  label={t("pages.agent.visuala.customize.summary")}
+                  checked={showSummary}
+                  onCheckedChange={setShowSummary}
+                />
+                <ToggleRow
+                  label={t("pages.agent.visuala.customize.flow")}
+                  checked={showFlow}
+                  onCheckedChange={setShowFlow}
+                />
+                <ToggleRow
+                  label={t("pages.agent.visuala.customize.timeline")}
+                  checked={showTimeline}
+                  onCheckedChange={setShowTimeline}
+                />
+                <ToggleRow
+                  label={t("pages.agent.visuala.cards.thinking")}
+                  checked={showThinking}
+                  onCheckedChange={setShowThinking}
+                />
+                <ToggleRow
+                  label={t("pages.agent.visuala.cards.tools")}
+                  checked={showTools}
+                  onCheckedChange={setShowTools}
+                />
+                <ToggleRow
+                  label={t("pages.agent.visuala.cards.memory")}
+                  checked={showMemory}
+                  onCheckedChange={setShowMemory}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {showSummary ? (
+          <Card className="border border-border/60" size="sm">
+            <CardHeader>
               <CardTitle>{t("pages.agent.visuala.hero_title")}</CardTitle>
             </CardHeader>
             <CardContent>
@@ -63,83 +112,128 @@ export function VisualaPage() {
                   label={t("pages.agent.visuala.metrics.phase")}
                   value={t(`pages.agent.visuala.phase.${metrics.phase}`)}
                 />
-                <SimpleBox
-                  label={t("pages.agent.visuala.cards.thinking")}
-                  value={String(metrics.thinkingCount)}
-                />
-                <SimpleBox
-                  label={t("pages.agent.visuala.cards.tools")}
-                  value={String(metrics.toolCount)}
-                />
-                <SimpleBox
-                  label={t("pages.agent.visuala.cards.memory")}
-                  value={t(`pages.agent.visuala.memory_state.${metrics.memoryState}`)}
-                />
+                {showThinking ? (
+                  <SimpleBox
+                    label={t("pages.agent.visuala.cards.thinking")}
+                    value={String(metrics.thinkingCount)}
+                  />
+                ) : null}
+                {showTools ? (
+                  <SimpleBox
+                    label={t("pages.agent.visuala.cards.tools")}
+                    value={String(metrics.toolCount)}
+                  />
+                ) : null}
+                {showMemory ? (
+                  <SimpleBox
+                    label={t("pages.agent.visuala.cards.memory")}
+                    value={t(
+                      `pages.agent.visuala.memory_state.${metrics.memoryState}`,
+                    )}
+                  />
+                ) : null}
               </div>
             </CardContent>
           </Card>
+          ) : null}
 
-          <div className="flex justify-center">
-            <div className="bg-border h-8 w-px" />
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-            <div className="space-y-4">
-              <SimpleFlowBox
-                title={t("pages.agent.visuala.now_title")}
-                value={t(`pages.agent.visuala.phase.${metrics.phase}`)}
-                tone={metrics.phaseTone}
-              />
-              <div className="flex justify-center">
-                <div className="bg-border h-10 w-px" />
-              </div>
-              <SimpleFlowBox
-                title={t("pages.agent.visuala.cards.io")}
-                value={String(metrics.ioCount)}
-                tone="io"
-              />
+          {showSummary && (showFlow || showTimeline) ? (
+            <div className="flex justify-center">
+              <div className="bg-border h-8 w-px" />
             </div>
+          ) : null}
 
-            <Card className="border border-border/60" size="sm">
-              <CardHeader>
-                <CardTitle>{t("pages.agent.visuala.timeline_title")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {visualEvents.length > 0 ? (
-                  <div className="space-y-0">
-                    {visualEvents.map((event, index) => (
-                      <div key={event.id} className="relative pl-8">
-                        {index < visualEvents.length - 1 ? (
-                          <div className="bg-border absolute top-8 left-3 h-[calc(100%+0.5rem)] w-px" />
-                        ) : null}
-                        <div className="bg-background absolute top-3 left-0 flex size-6 items-center justify-center border border-border">
-                          <event.Icon className="size-3.5" />
-                        </div>
-                        <div
-                          className={cn(
-                            "mb-3 border px-3 py-3",
-                            boxToneClasses[event.tone],
-                          )}
-                        >
-                          <div className="text-sm font-medium">
-                            {event.label}
-                          </div>
-                          <div className="mt-1 font-mono text-xs break-words opacity-80">
-                            {event.detail}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+          {showFlow || showTimeline ? (
+            <div
+              className={cn(
+                "grid gap-6",
+                showFlow && showTimeline
+                  ? "lg:grid-cols-[220px_minmax(0,1fr)]"
+                  : "lg:grid-cols-1",
+              )}
+            >
+              {showFlow ? (
+                <div className="space-y-4">
+                  <SimpleFlowBox
+                    title={t("pages.agent.visuala.now_title")}
+                    value={t(`pages.agent.visuala.phase.${metrics.phase}`)}
+                    tone={metrics.phaseTone}
+                  />
+                  <div className="flex justify-center">
+                    <div className="bg-border h-10 w-px" />
                   </div>
-                ) : (
-                  <EmptyState text={t("pages.agent.visuala.empty")} />
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                  <SimpleFlowBox
+                    title={t("pages.agent.visuala.cards.io")}
+                    value={String(metrics.ioCount)}
+                    tone="io"
+                  />
+                </div>
+              ) : null}
+
+              {showTimeline ? (
+                <Card className="border border-border/60" size="sm">
+                  <CardHeader>
+                    <CardTitle>{t("pages.agent.visuala.timeline_title")}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {visualEvents.length > 0 ? (
+                      <div className="space-y-0">
+                        {visualEvents.map((event, index) => (
+                          <div key={event.id} className="relative pl-8">
+                            {index < visualEvents.length - 1 ? (
+                              <div className="bg-border absolute top-8 left-3 h-[calc(100%+0.5rem)] w-px" />
+                            ) : null}
+                            <div className="bg-background absolute top-3 left-0 flex size-6 items-center justify-center border border-border">
+                              <event.Icon className="size-3.5" />
+                            </div>
+                            <div
+                              className={cn(
+                                "mb-3 border px-3 py-3",
+                                boxToneClasses[event.tone],
+                              )}
+                            >
+                              <div className="text-sm font-medium">
+                                {event.label}
+                              </div>
+                              <div className="mt-1 font-mono text-xs break-words opacity-80">
+                                {event.detail}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyState text={t("pages.agent.visuala.empty")} />
+                    )}
+                  </CardContent>
+                </Card>
+              ) : null}
+            </div>
+          ) : (
+            <EmptyState
+              text={t("pages.agent.visuala.customize.nothing_selected")}
+            />
+          )}
         </div>
       </div>
     </div>
+  )
+}
+
+function ToggleRow({
+  label,
+  checked,
+  onCheckedChange,
+}: {
+  label: string
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+}) {
+  return (
+    <label className="flex items-center justify-between border border-border px-3 py-3 text-sm">
+      <span>{label}</span>
+      <Switch checked={checked} onCheckedChange={onCheckedChange} size="sm" />
+    </label>
   )
 }
 

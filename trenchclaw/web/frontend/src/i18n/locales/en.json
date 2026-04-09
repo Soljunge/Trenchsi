@@ -411,6 +411,7 @@
       "visuala": {
         "hero_title": "Visuala agent activity",
         "hero_description": "A live visual board built from gateway activity so users can see what the agent is doing right now.",
+        "customize_title": "Customize view",
         "now_title": "Current focus",
         "now_description": "The latest signal from the running agent loop.",
         "timeline_title": "Recent timeline",
@@ -437,6 +438,12 @@
           "active": "Saving now",
           "saved": "Saved",
           "idle": "No data yet"
+        },
+        "customize": {
+          "summary": "Summary boxes",
+          "flow": "Flow boxes",
+          "timeline": "Timeline",
+          "nothing_selected": "Nothing is selected. Turn on at least one section to show the view."
         },
         "phase": {
           "booting": "Connecting",
