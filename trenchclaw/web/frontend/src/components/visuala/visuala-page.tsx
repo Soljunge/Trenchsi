@@ -54,7 +54,7 @@ export function VisualaPage() {
               <CardTitle>{t("pages.agent.visuala.hero_title")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 md:grid-cols-4">
+              <div className="grid gap-3 md:grid-cols-5">
                 <SimpleBox
                   label={t("pages.agent.visuala.metrics.gateway")}
                   value={t(`pages.agent.visuala.gateway_state.${state}`)}
@@ -70,6 +70,10 @@ export function VisualaPage() {
                 <SimpleBox
                   label={t("pages.agent.visuala.cards.tools")}
                   value={String(metrics.toolCount)}
+                />
+                <SimpleBox
+                  label={t("pages.agent.visuala.cards.memory")}
+                  value={t(`pages.agent.visuala.memory_state.${metrics.memoryState}`)}
                 />
               </div>
             </CardContent>
@@ -260,6 +264,15 @@ function summarizeLogs(logs: string[], gatewayState: string) {
     "channel",
     "connect",
   ])
+  const memoryCount = countMatches(logs, [
+    "memory",
+    "memories",
+    "store",
+    "stored",
+    "save",
+    "saved",
+    "recall",
+  ])
 
   const latest = logs[logs.length - 1]
   const latestEvent = latest
@@ -292,10 +305,28 @@ function summarizeLogs(logs: string[], gatewayState: string) {
     ? latest
     : "No live gateway activity has been captured yet."
 
+  const memoryState: "active" | "saved" | "idle" =
+    latest &&
+    containsAny(latest, [
+      "memory",
+      "memories",
+      "store",
+      "stored",
+      "save",
+      "saved",
+      "recall",
+    ])
+      ? "active"
+      : memoryCount > 0
+        ? "saved"
+        : "idle"
+
   return {
     thinkingCount,
     toolCount,
     ioCount,
+    memoryCount,
+    memoryState,
     phase,
     phaseTone,
     summary,
@@ -304,9 +335,11 @@ function summarizeLogs(logs: string[], gatewayState: string) {
 
 function countMatches(lines: string[], patterns: string[]) {
   return lines.reduce((count, line) => {
-    const lower = line.toLowerCase()
-    return patterns.some((pattern) => lower.includes(pattern))
-      ? count + 1
-      : count
+    return containsAny(line, patterns) ? count + 1 : count
   }, 0)
+}
+
+function containsAny(line: string, patterns: string[]) {
+  const lower = line.toLowerCase()
+  return patterns.some((pattern) => lower.includes(pattern))
 }

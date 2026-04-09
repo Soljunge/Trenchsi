@@ -88,7 +88,13 @@ export function useChatModels({ isConnected }: UseChatModelsOptions) {
     [modelList],
   )
 
+  const defaultModel = useMemo(
+    () => modelList.find((m) => m.model_name === defaultModelName) ?? null,
+    [defaultModelName, modelList],
+  )
+
   return {
+    defaultModel,
     defaultModelName,
     hasConfiguredModels,
     apiKeyModels,

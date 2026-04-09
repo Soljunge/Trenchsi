@@ -12,6 +12,7 @@ interface ChatComposerProps {
   onSend: () => void
   isConnected: boolean
   hasDefaultModel: boolean
+  blockedReason?: string
 }
 
 export function ChatComposer({
@@ -20,6 +21,7 @@ export function ChatComposer({
   onSend,
   isConnected,
   hasDefaultModel,
+  blockedReason,
 }: ChatComposerProps) {
   const { t } = useTranslation()
   const canInput = isConnected && hasDefaultModel
@@ -39,7 +41,7 @@ export function ChatComposer({
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={t("chat.placeholder")}
+          placeholder={canInput ? t("chat.placeholder") : blockedReason}
           disabled={!canInput}
           className={cn(
             "placeholder:text-muted-foreground max-h-[200px] min-h-[60px] resize-none border-0 bg-transparent px-2 py-1 text-[15px] shadow-none transition-colors focus-visible:ring-0 focus-visible:outline-none dark:bg-transparent",
@@ -50,7 +52,9 @@ export function ChatComposer({
         />
 
         <div className="mt-2 flex items-center justify-between px-1">
-          <div className="flex items-center gap-1">{/* action buttons */}</div>
+          <div className="text-muted-foreground min-h-5 text-xs">
+            {!canInput ? blockedReason : ""}
+          </div>
 
           <Button
             size="icon"

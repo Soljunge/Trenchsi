@@ -38,6 +38,7 @@ export function ChatPage() {
   const isChatConnected = connectionState === "connected"
 
   const {
+    defaultModel,
     defaultModelName,
     hasConfiguredModels,
     apiKeyModels,
@@ -46,6 +47,13 @@ export function ChatPage() {
     handleSetDefault,
   } = useChatModels({ isConnected: isGatewayRunning })
   const canSend = isChatConnected && Boolean(defaultModelName)
+  const blockedReason = getComposerBlockedReason({
+    hasDefaultModel: Boolean(defaultModelName),
+    isGatewayRunning,
+    isChatConnected,
+    defaultModel,
+    t,
+  })
 
   const {
     sessions,
@@ -170,7 +178,62 @@ export function ChatPage() {
         onSend={handleSend}
         isConnected={isChatConnected}
         hasDefaultModel={Boolean(defaultModelName)}
+        blockedReason={blockedReason}
       />
     </div>
+  )
+}
+
+function getComposerBlockedReason({
+  hasDefaultModel,
+  isGatewayRunning,
+  isChatConnected,
+  defaultModel,
+  t,
+}: {
+  hasDefaultModel: boolean
+  isGatewayRunning: boolean
+  isChatConnected: boolean
+  defaultModel: {
+    auth_method?: string
+    api_base?: string
+  } | null
+  t: (key: string) => string
+}) {
+  if (!hasDefaultModel) {
+    return t("chat.composerBlocked.noDefaultModel")
+  }
+
+  if (!isGatewayRunning) {
+    if (isLocalLikeModel(defaultModel)) {
+      return t("chat.composerBlocked.localGatewayOffline")
+    }
+    return t("chat.composerBlocked.gatewayOffline")
+  }
+
+  if (!isChatConnected) {
+    if (isLocalLikeModel(defaultModel)) {
+      return t("chat.composerBlocked.localModelUnavailable")
+    }
+    return t("chat.composerBlocked.apiModelUnavailable")
+  }
+
+  return ""
+}
+
+function isLocalLikeModel(
+  model: {
+    auth_method?: string
+    api_base?: string
+  } | null,
+) {
+  if (!model) {
+    return false
+  }
+
+  return Boolean(
+    model.auth_method === "local" ||
+      model.api_base?.includes("localhost") ||
+      model.api_base?.includes("127.0.0.1"),
   )
 }

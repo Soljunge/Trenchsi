@@ -35,6 +35,13 @@
     "deleteSession": "Delete session",
     "messagesCount": "{{count}} messages",
     "noModel": "Select model",
+    "composerBlocked": {
+      "noDefaultModel": "Pick a default model first so chat knows what to use.",
+      "gatewayOffline": "Chat is unavailable because the gateway is not running. Start it from the top bar.",
+      "localGatewayOffline": "This local model is unavailable because the gateway is not running. Start the gateway and make sure the local model service is up.",
+      "localModelUnavailable": "This local model is not reachable. Make sure the local model server is running and the configured localhost port is correct.",
+      "apiModelUnavailable": "This model is not accessible right now. Check the API key, provider login, network connection, or model endpoint."
+    },
     "empty": {
       "noConfiguredModel": "No Model Configured",
       "noConfiguredModelDescription": "You need to configure at least one AI model with an API key before you can start chatting.",
@@ -414,8 +421,14 @@
           "thinking_description": "Log lines that suggest the model is reasoning or composing.",
           "tools": "Tool actions",
           "tools_description": "Log lines related to tools, commands, or MCP operations.",
+          "memory": "Memory",
           "io": "I/O activity",
           "io_description": "Messages, sessions, channels, and connection events."
+        },
+        "memory_state": {
+          "active": "Saving now",
+          "saved": "Saved",
+          "idle": "No data yet"
         },
         "phase": {
           "booting": "Connecting",
