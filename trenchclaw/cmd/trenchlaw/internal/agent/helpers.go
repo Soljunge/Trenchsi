@@ -12,15 +12,29 @@ import (
 	"github.com/ergochat/readline"
 
 	"github.com/sipeed/trenchlaw/cmd/trenchlaw/internal"
+	"github.com/sipeed/trenchlaw/cmd/trenchlaw/internal/onboard"
 	"github.com/sipeed/trenchlaw/pkg/agent"
 	"github.com/sipeed/trenchlaw/pkg/bus"
 	"github.com/sipeed/trenchlaw/pkg/logger"
 	"github.com/sipeed/trenchlaw/pkg/providers"
 )
 
+var agentOnboardComplete = func() bool {
+	return onboard.IsComplete()
+}
+
+var agentRunOnboard = func() error {
+	onboard.Run(false)
+	return nil
+}
+
 func agentCmd(message, sessionKey, model string, debug bool) error {
 	if sessionKey == "" {
 		sessionKey = "cli:default"
+	}
+
+	if !agentOnboardComplete() {
+		return agentRunOnboard()
 	}
 
 	cfg, err := internal.LoadConfig()
