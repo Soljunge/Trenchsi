@@ -5,9 +5,9 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 
-const OWNER = process.env.TRENCHLAW_NPM_REPO_OWNER || "sipeed";
-const REPO = process.env.TRENCHLAW_NPM_REPO_NAME || "trenchlaw";
-const VERSION = process.env.TRENCHLAW_NPM_VERSION || process.env.npm_package_version || "latest";
+const OWNER = process.env.TRENCHSI_NPM_REPO_OWNER || process.env.TRENCHLAW_NPM_REPO_OWNER || "sipeed";
+const REPO = process.env.TRENCHSI_NPM_REPO_NAME || process.env.TRENCHLAW_NPM_REPO_NAME || "trenchsi";
+const VERSION = process.env.TRENCHSI_NPM_VERSION || process.env.TRENCHLAW_NPM_VERSION || process.env.npm_package_version || "latest";
 const ROOT_DIR = path.resolve(__dirname, "..");
 const BIN_DIR = path.join(ROOT_DIR, ".bin");
 
@@ -45,17 +45,17 @@ function resolveTarget() {
 
   if (platform === "Windows") {
     return {
-      assetName: `trenchlaw_${platform}_${arch}.zip`,
-      binaryName: "trenchlaw.exe",
-      installedName: "trenchlaw.exe",
+      assetName: `trenchsi_${platform}_${arch}.zip`,
+      binaryName: "trenchsi.exe",
+      installedName: "trenchsi.exe",
       archiveType: "zip",
     };
   }
 
   return {
-    assetName: `trenchlaw_${platform}_${arch}.tar.gz`,
-    binaryName: "trenchlaw",
-    installedName: "trenchlaw",
+    assetName: `trenchsi_${platform}_${arch}.tar.gz`,
+    binaryName: "trenchsi",
+    installedName: "trenchsi",
     archiveType: "tar.gz",
   };
 }
@@ -66,7 +66,7 @@ function getInstalledBinaryPath() {
 }
 
 function shouldSkipPostinstall() {
-  return process.env.TRENCHLAW_NPM_SKIP_DOWNLOAD === "1";
+  return process.env.TRENCHSI_NPM_SKIP_DOWNLOAD === "1" || process.env.TRENCHLAW_NPM_SKIP_DOWNLOAD === "1";
 }
 
 function ensureInstalled(options = {}) {
@@ -78,7 +78,7 @@ function ensureInstalled(options = {}) {
 
   if (shouldSkipPostinstall()) {
     throw new Error(
-      "native binary is missing and download is disabled by TRENCHLAW_NPM_SKIP_DOWNLOAD=1",
+      "native binary is missing and download is disabled by TRENCHSI_NPM_SKIP_DOWNLOAD=1",
     );
   }
 
@@ -93,11 +93,11 @@ function installBinary(options = {}) {
   const downloadUrl = `https://github.com/${OWNER}/${REPO}/releases/${releasePath}/${target.assetName}`;
 
   fs.mkdirSync(BIN_DIR, { recursive: true });
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "trenchlaw-npm-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "trenchsi-npm-"));
   const archivePath = path.join(tempDir, target.assetName);
 
   if (!quiet) {
-    console.error(`[trenchlaw] downloading ${downloadUrl}`);
+    console.error(`[trenchsi] downloading ${downloadUrl}`);
   }
 
   downloadFile(downloadUrl, archivePath);
@@ -115,7 +115,7 @@ function installBinary(options = {}) {
   }
 
   if (!quiet) {
-    console.error(`[trenchlaw] installed native binary to ${installedBinary}`);
+    console.error(`[trenchsi] installed native binary to ${installedBinary}`);
   }
 }
 

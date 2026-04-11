@@ -7,7 +7,7 @@ function main() {
   try {
     ensureInstalled({ quiet: false });
   } catch (error) {
-    console.error(`[trenchlaw] ${error.message}`);
+    console.error(`[trenchsi] ${error.message}`);
     process.exit(1);
   }
 
@@ -17,7 +17,7 @@ function main() {
   });
 
   if (result.error) {
-    console.error(`[trenchlaw] failed to start native binary: ${result.error.message}`);
+    console.error(`[trenchsi] failed to start native binary: ${result.error.message}`);
     process.exit(1);
   }
 

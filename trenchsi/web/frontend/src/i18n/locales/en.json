@@ -452,7 +452,9 @@
         "metrics": {
           "gateway": "Gateway",
           "phase": "Phase",
-          "events": "Events"
+          "events": "Events",
+          "tokens": "Tokens Used",
+          "tokens_unknown": "No data"
         },
         "cards": {
           "thinking": "Thinking",

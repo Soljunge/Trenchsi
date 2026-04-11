@@ -146,6 +146,10 @@ export function VisualaPage() {
                   label={t("pages.agent.visuala.metrics.phase")}
                   value={t(`pages.agent.visuala.phase.${metrics.phase}`)}
                 />
+                <SimpleBox
+                  label={t("pages.agent.visuala.metrics.tokens")}
+                  value={formatTokenUsage(metrics.tokensUsed, t("pages.agent.visuala.metrics.tokens_unknown"))}
+                />
                 {showThinking ? (
                   <SimpleBox
                     label={t("pages.agent.visuala.cards.thinking")}
@@ -494,6 +498,7 @@ function summarizeLogs(logs: string[], gatewayState: string) {
     "saved",
     "recall",
   ])
+  const tokensUsed = summarizeTokenUsage(logs)
 
   const latest = logs[logs.length - 1]
   const latestEvent = latest
@@ -548,12 +553,78 @@ function summarizeLogs(logs: string[], gatewayState: string) {
     toolCount,
     ioCount,
     memoryCount,
+    tokensUsed,
     memoryState,
     memoryTarget,
     phase,
     phaseTone,
     summary,
   }
+}
+
+function summarizeTokenUsage(logs: string[]) {
+  let total = 0
+  let found = false
+
+  for (const line of logs) {
+    const normalized = line.toLowerCase()
+    const totalTokens = extractTokenValue(normalized, [
+      /total_tokens["=: ]+(\d+)/g,
+      /total tokens["=: ]+(\d+)/g,
+      /tokens used["=: ]+(\d+)/g,
+      /token usage["=: ]+(\d+)/g,
+    ])
+
+    if (totalTokens !== null) {
+      total += totalTokens
+      found = true
+      continue
+    }
+
+    const inputTokens = extractTokenValue(normalized, [
+      /prompt_tokens["=: ]+(\d+)/g,
+      /input_tokens["=: ]+(\d+)/g,
+      /prompt tokens["=: ]+(\d+)/g,
+      /input tokens["=: ]+(\d+)/g,
+    ])
+    const outputTokens = extractTokenValue(normalized, [
+      /completion_tokens["=: ]+(\d+)/g,
+      /output_tokens["=: ]+(\d+)/g,
+      /completion tokens["=: ]+(\d+)/g,
+      /output tokens["=: ]+(\d+)/g,
+    ])
+
+    if (inputTokens !== null || outputTokens !== null) {
+      total += (inputTokens ?? 0) + (outputTokens ?? 0)
+      found = true
+    }
+  }
+
+  return found ? total : null
+}
+
+function extractTokenValue(line: string, patterns: RegExp[]) {
+  for (const pattern of patterns) {
+    const match = pattern.exec(line)
+    if (!match) {
+      continue
+    }
+
+    const value = Number.parseInt(match[1], 10)
+    if (Number.isFinite(value)) {
+      return value
+    }
+  }
+
+  return null
+}
+
+function formatTokenUsage(value: number | null, fallback: string) {
+  if (value === null) {
+    return fallback
+  }
+
+  return new Intl.NumberFormat().format(value)
 }
 
 function countMatches(lines: string[], patterns: string[]) {

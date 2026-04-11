@@ -1,18 +1,18 @@
 {
-  "name": "trenchlaw",
+  "name": "trenchsi",
   "version": "0.0.0-dev",
-  "description": "NPM wrapper for the TrenchLaw native CLI binary",
+  "description": "NPM wrapper for the Trenchsi native CLI binary",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sipeed/trenchlaw.git"
+    "url": "git+https://github.com/sipeed/trenchsi.git"
   },
-  "homepage": "https://trenchlaw.xyz/",
+  "homepage": "https://trenchsi.xyz/",
   "bugs": {
-    "url": "https://github.com/sipeed/trenchlaw/issues"
+    "url": "https://github.com/sipeed/trenchsi/issues"
   },
   "bin": {
-    "trenchlaw": "./bin/trenchlaw.js"
+    "trenchsi": "./bin/trenchlaw.js"
   },
   "files": [
     "bin",
@@ -26,7 +26,7 @@
     "agent",
     "cli",
     "go",
-    "trenchlaw"
+    "trenchsi"
   ],
   "engines": {
     "node": ">=18"
