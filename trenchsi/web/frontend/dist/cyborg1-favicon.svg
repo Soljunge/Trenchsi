@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <clipPath id="cyborg1-circle">
+      <circle cx="256" cy="256" r="248" />
+    </clipPath>
+  </defs>
+  <image
+    href="/cyborg1-favicon.png?v=20260408h"
+    x="0"
+    y="0"
+    width="512"
+    height="512"
+    preserveAspectRatio="xMidYMid slice"
+    clip-path="url(#cyborg1-circle)"
+  />
+</svg>

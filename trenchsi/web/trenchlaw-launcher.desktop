@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TrenchLaw Launcher
+Comment=Web-based configuration and management UI for TrenchLaw
+Exec=trenchlaw-launcher
+Icon=trenchlaw-launcher
+Terminal=true
+Type=Application
+Categories=Utility;Network;
+Keywords=trenchlaw;ai;agent;bot;

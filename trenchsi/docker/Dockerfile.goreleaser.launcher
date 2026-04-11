@@ -1,0 +1,12 @@
+FROM alpine:3.21
+
+ARG TARGETPLATFORM
+
+RUN apk add --no-cache ca-certificates tzdata
+
+COPY $TARGETPLATFORM/trenchlaw /usr/local/bin/trenchlaw
+COPY $TARGETPLATFORM/trenchlaw-launcher /usr/local/bin/trenchlaw-launcher
+COPY $TARGETPLATFORM/trenchlaw-launcher-tui /usr/local/bin/trenchlaw-launcher-tui
+
+ENTRYPOINT ["trenchlaw-launcher"]
+CMD ["-public", "-no-browser"]

@@ -1,0 +1,21 @@
+{
+  "name": "Trenchsi",
+  "short_name": "Trenchsi",
+  "icons": [
+    {
+      "src": "/cyborg1-web-app-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/cyborg1-web-app-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#ff6b4a",
+  "background_color": "#ff6b4a",
+  "display": "standalone"
+}

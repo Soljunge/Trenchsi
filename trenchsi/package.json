@@ -1,0 +1,34 @@
+{
+  "name": "trenchlaw",
+  "version": "0.0.0-dev",
+  "description": "NPM wrapper for the TrenchLaw native CLI binary",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sipeed/trenchlaw.git"
+  },
+  "homepage": "https://trenchlaw.xyz/",
+  "bugs": {
+    "url": "https://github.com/sipeed/trenchlaw/issues"
+  },
+  "bin": {
+    "trenchlaw": "./bin/trenchlaw.js"
+  },
+  "files": [
+    "bin",
+    "scripts"
+  ],
+  "scripts": {
+    "postinstall": "node ./scripts/install.js"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "cli",
+    "go",
+    "trenchlaw"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

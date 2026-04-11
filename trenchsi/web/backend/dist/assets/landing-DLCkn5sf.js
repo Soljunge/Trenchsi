@@ -1,0 +1,1 @@
+import{j as e}from"./index-OMMpXHYb.js";function n(){return e.jsx("div",{className:"h-dvh w-full overflow-hidden bg-white",children:e.jsx("iframe",{title:"Trenchsi landing page",src:"/trenchlaw-landing.html",className:"block h-full w-full border-0"})})}export{n as component};

@@ -1,18 +1,18 @@
-# TrenchClaw
+# Trenchsi
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Built With: Go](https://img.shields.io/badge/Built%20With-Go-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![Interface: CLI Agent](https://img.shields.io/badge/Interface-CLI%20Agent-F97316)](#quick-start)
-[![Channel: Telegram](https://img.shields.io/badge/Channel-Telegram-26A5E4?logo=telegram&logoColor=white)](./trenchclaw/docs/channels/telegram/README.md)
+[![Channel: Telegram](https://img.shields.io/badge/Channel-Telegram-26A5E4?logo=telegram&logoColor=white)](./trenchsi/docs/channels/telegram/README.md)
 [![Gateway: Enabled](https://img.shields.io/badge/Gateway-Multi--Channel-111827)](#channel-integrations)
 
 <p align="center">
-  <img src="./trenchclaw/assets/agent-avatar.png" alt="TrenchClaw cyborg avatar" width="260" />
+  <img src="./trenchsi/assets/agent-avatar.png" alt="Trenchsi cyborg avatar" width="260" />
 </p>
 
-TrenchClaw is a lightweight AI agent focused on practical work: direct chat in the terminal, configurable model providers, workspace memory, skills, scheduled jobs, and message-based integrations such as Telegram and Discord.
+Trenchsi is a lightweight AI agent focused on practical work: direct chat in the terminal, configurable model providers, workspace memory, skills, scheduled jobs, and message-based integrations such as Telegram and Discord.
 
-This repository contains the TrenchClaw project workspace and the agent core in [`trenchclaw/`](./trenchclaw).
+This repository contains the Trenchsi project workspace and the agent core in [`trenchsi/`](./trenchsi).
 
 ## What The Agent Can Do
 
@@ -28,33 +28,33 @@ This repository contains the TrenchClaw project workspace and the agent core in 
 ## Repository Layout
 
 - [`README.md`](./README.md): GitHub landing page and quick start
-- [`trenchclaw/`](./trenchclaw): Agent source code, docs, workspace scaffold, and packaging
-- [`trenchclaw/docs/`](./trenchclaw/docs): Provider, channel, and architecture docs
-- [`trenchclaw/workspace/`](./trenchclaw/workspace): Default workspace identity, memory, and tool instructions
+- [`trenchsi/`](./trenchsi): Agent source code, docs, workspace scaffold, and packaging
+- [`trenchsi/docs/`](./trenchsi/docs): Provider, channel, and architecture docs
+- [`trenchsi/workspace/`](./trenchsi/workspace): Default workspace identity, memory, and tool instructions
 
 ## Quick Start
 
-The shortest path is: build once, run onboarding once, set a default model, then use `trenchclaw`.
+The shortest path is: build once, run onboarding once, set a default model, then use `trenchsi`.
 
 ### 1. Build the CLI
 
 From the repository root:
 
 ```bash
-cd trenchclaw
-go build -o trenchclaw ./cmd/trenchlaw
+cd trenchsi
+go build -o trenchsi ./cmd/trenchlaw
 ```
 
 ### 2. Run onboarding
 
 ```bash
-./trenchclaw onboard
+./trenchsi onboard
 ```
 
 This creates the local config and workspace files. `install` is an alias:
 
 ```bash
-./trenchclaw install
+./trenchsi install
 ```
 
 ### 3. Set a default model
@@ -62,10 +62,10 @@ This creates the local config and workspace files. `install` is an alias:
 You can do this during onboarding or later with the CLI:
 
 ```bash
-./trenchclaw auth login
-./trenchclaw auth status
-./trenchclaw model
-./trenchclaw model gpt-5.4
+./trenchsi auth login
+./trenchsi auth status
+./trenchsi model
+./trenchsi model gpt-5.4
 ```
 
 If you prefer editing config directly, add a model entry such as:
@@ -78,14 +78,14 @@ If you prefer editing config directly, add a model entry such as:
 }
 ```
 
-Provider setup details are in [`trenchclaw/docs/providers.md`](./trenchclaw/docs/providers.md).
+Provider setup details are in [`trenchsi/docs/providers.md`](./trenchsi/docs/providers.md).
 
 ### 4. Start the agent
 
 For normal use:
 
 ```bash
-./trenchclaw
+./trenchsi
 ```
 
 If onboarding is complete, the interactive launcher lets you choose:
@@ -97,15 +97,15 @@ If onboarding is complete, the interactive launcher lets you choose:
 If you want the terminal agent directly:
 
 ```bash
-./trenchclaw agent
-./trenchclaw agent -m "Summarize the repository and suggest next steps"
+./trenchsi agent
+./trenchsi agent -m "Summarize the repository and suggest next steps"
 ```
 
 Useful checks:
 
 ```bash
-./trenchclaw status
-./trenchclaw version
+./trenchsi status
+./trenchsi version
 ```
 
 ## Most Used Commands
@@ -113,30 +113,30 @@ Useful checks:
 Use these first before exploring the rest of the CLI:
 
 ```bash
-./trenchclaw onboard      # first-time setup
-./trenchclaw              # launcher: agent, web, or tui
-./trenchclaw agent        # terminal agent directly
-./trenchclaw auth login   # connect a provider
-./trenchclaw model        # list or set the default model
-./trenchclaw status       # confirm config and runtime state
-./trenchclaw gateway      # run integrations and long-lived channels
-./trenchclaw skills list  # inspect installed skills
-./trenchclaw cron list    # inspect scheduled jobs
+./trenchsi onboard      # first-time setup
+./trenchsi              # launcher: agent, web, or tui
+./trenchsi agent        # terminal agent directly
+./trenchsi auth login   # connect a provider
+./trenchsi model        # list or set the default model
+./trenchsi status       # confirm config and runtime state
+./trenchsi gateway      # run integrations and long-lived channels
+./trenchsi skills list  # inspect installed skills
+./trenchsi cron list    # inspect scheduled jobs
 ```
 
 ## Interfaces
 
-`trenchclaw` is the default entry point.
+`trenchsi` is the default entry point.
 
-- `trenchclaw`: opens the startup selector in an interactive terminal
-- `trenchclaw agent`: skips the selector and starts terminal chat
-- `trenchclaw gateway`: runs the always-on gateway for channels and automations
+- `trenchsi`: opens the startup selector in an interactive terminal
+- `trenchsi agent`: skips the selector and starts terminal chat
+- `trenchsi gateway`: runs the always-on gateway for channels and automations
 
-If setup is incomplete, `trenchclaw` sends you to onboarding first. If no default model is configured, `trenchclaw agent` tells you to finish setup or choose a model.
+If setup is incomplete, `trenchsi` sends you to onboarding first. If no default model is configured, `trenchsi agent` tells you to finish setup or choose a model.
 
 ## Channel Integrations
 
-TrenchClaw can operate across external messaging platforms through the gateway.
+Trenchsi can operate across external messaging platforms through the gateway.
 
 Documented channel:
 
@@ -145,58 +145,58 @@ Documented channel:
 Start the gateway with:
 
 ```bash
-./trenchclaw gateway
+./trenchsi gateway
 ```
 
 Channel setup docs:
 
-- [`trenchclaw/docs/channels/telegram/README.md`](./trenchclaw/docs/channels/telegram/README.md)
-- [`trenchclaw/docs/channels/discord/README.md`](./trenchclaw/docs/channels/discord/README.md)
-- [`trenchclaw/docs/channels/slack/README.md`](./trenchclaw/docs/channels/slack/README.md)
+- [`trenchsi/docs/channels/telegram/README.md`](./trenchsi/docs/channels/telegram/README.md)
+- [`trenchsi/docs/channels/discord/README.md`](./trenchsi/docs/channels/discord/README.md)
+- [`trenchsi/docs/channels/slack/README.md`](./trenchsi/docs/channels/slack/README.md)
 
 ## Skills, Memory, And Workspace Customization
 
-The workspace is part of the agent design. TrenchClaw ships with editable workspace files that define identity, memory, tools, and user-specific context.
+The workspace is part of the agent design. Trenchsi ships with editable workspace files that define identity, memory, tools, and user-specific context.
 
 Important files:
 
-- [`trenchclaw/workspace/AGENT.md`](./trenchclaw/workspace/AGENT.md)
-- [`trenchclaw/workspace/USER.md`](./trenchclaw/workspace/USER.md)
-- [`trenchclaw/workspace/SOUL.md`](./trenchclaw/workspace/SOUL.md)
-- [`trenchclaw/workspace/TOOLS.md`](./trenchclaw/workspace/TOOLS.md)
-- [`trenchclaw/workspace/memory/MEMORY.md`](./trenchclaw/workspace/memory/MEMORY.md)
+- [`trenchsi/workspace/AGENT.md`](./trenchsi/workspace/AGENT.md)
+- [`trenchsi/workspace/USER.md`](./trenchsi/workspace/USER.md)
+- [`trenchsi/workspace/SOUL.md`](./trenchsi/workspace/SOUL.md)
+- [`trenchsi/workspace/TOOLS.md`](./trenchsi/workspace/TOOLS.md)
+- [`trenchsi/workspace/memory/MEMORY.md`](./trenchsi/workspace/memory/MEMORY.md)
 
 Skill management commands:
 
 ```bash
-./trenchclaw skills list
-./trenchclaw skills search git
-./trenchclaw skills install <github-repo>
-./trenchclaw skills remove <skill-name>
+./trenchsi skills list
+./trenchsi skills search git
+./trenchsi skills install <github-repo>
+./trenchsi skills remove <skill-name>
 ```
 
 ## Scheduling And Automation
 
-TrenchClaw includes built-in cron support for recurring work.
+Trenchsi includes built-in cron support for recurring work.
 
 Examples:
 
 ```bash
-./trenchclaw cron list
-./trenchclaw cron add
-./trenchclaw cron enable <job-id>
-./trenchclaw cron disable <job-id>
-./trenchclaw cron remove <job-id>
+./trenchsi cron list
+./trenchsi cron add
+./trenchsi cron enable <job-id>
+./trenchsi cron disable <job-id>
+./trenchsi cron remove <job-id>
 ```
 
 ## Documentation
 
-- Provider setup: [`trenchclaw/docs/providers.md`](./trenchclaw/docs/providers.md)
-- Hooks: [`trenchclaw/docs/hooks/README.md`](./trenchclaw/docs/hooks/README.md)
-- Agent refactor notes: [`trenchclaw/docs/agent-refactor/README.md`](./trenchclaw/docs/agent-refactor/README.md)
-- Chat app docs: [`trenchclaw/docs/chat-apps.md`](./trenchclaw/docs/chat-apps.md)
+- Provider setup: [`trenchsi/docs/providers.md`](./trenchsi/docs/providers.md)
+- Hooks: [`trenchsi/docs/hooks/README.md`](./trenchsi/docs/hooks/README.md)
+- Agent refactor notes: [`trenchsi/docs/agent-refactor/README.md`](./trenchsi/docs/agent-refactor/README.md)
+- Chat app docs: [`trenchsi/docs/chat-apps.md`](./trenchsi/docs/chat-apps.md)
 
 ## Notes
 
-- The package metadata inside `trenchclaw/` still references `trenchlaw` in several places. The current repo name and top-level project presentation use `TrenchClaw`.
+- The package metadata inside `trenchsi/` still references `trenchlaw` in several places. The current repo name and top-level project presentation use `Trenchsi`.
 - `.DS_Store` files are currently modified in the repository and were not changed by this README update.

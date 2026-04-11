@@ -1,0 +1,286 @@
+import { IconPlus } from "@tabler/icons-react"
+import { useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+
+import { AssistantMessage } from "@/components/chat/assistant-message"
+import { ChatComposer } from "@/components/chat/chat-composer"
+import { ChatEmptyState } from "@/components/chat/chat-empty-state"
+import { ModelSelector } from "@/components/chat/model-selector"
+import { SessionHistoryMenu } from "@/components/chat/session-history-menu"
+import { TypingIndicator } from "@/components/chat/typing-indicator"
+import { UserMessage } from "@/components/chat/user-message"
+import { PageHeader } from "@/components/page-header"
+import { Button } from "@/components/ui/button"
+import { useChatModels } from "@/hooks/use-chat-models"
+import { useGateway } from "@/hooks/use-gateway"
+import { useJameChat } from "@/hooks/use-jame-chat"
+import { useSessionHistory } from "@/hooks/use-session-history"
+
+export function ChatPage() {
+  const { t } = useTranslation()
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [isAtBottom, setIsAtBottom] = useState(true)
+  const [hasScrolled, setHasScrolled] = useState(false)
+  const [input, setInput] = useState("")
+  const [perfStats, setPerfStats] = useState({ fps: 0, frameMs: 0 })
+
+  const {
+    messages,
+    connectionState,
+    errorDetail,
+    isTyping,
+    activeSessionId,
+    sendMessage,
+    switchSession,
+    newChat,
+  } = useJameChat()
+
+  const { state: gwState } = useGateway()
+  const isGatewayRunning = gwState === "running"
+  const isChatConnected = connectionState === "connected"
+
+  const {
+    defaultModel,
+    defaultModelName,
+    hasConfiguredModels,
+    apiKeyModels,
+    oauthModels,
+    localModels,
+    handleSetDefault,
+  } = useChatModels({ isConnected: isGatewayRunning })
+  const canSend = isChatConnected && Boolean(defaultModelName)
+  const blockedReason = getComposerBlockedReason({
+    hasDefaultModel: Boolean(defaultModelName),
+    isGatewayRunning,
+    isChatConnected,
+    defaultModel,
+    t,
+  })
+
+  const {
+    sessions,
+    hasMore,
+    loadError,
+    loadErrorMessage,
+    observerRef,
+    loadSessions,
+    handleDeleteSession,
+  } = useSessionHistory({
+    activeSessionId,
+    onDeletedActiveSession: newChat,
+  })
+
+  const syncScrollState = (element: HTMLDivElement) => {
+    const { scrollTop, scrollHeight, clientHeight } = element
+    setHasScrolled(scrollTop > 0)
+    setIsAtBottom(scrollHeight - scrollTop <= clientHeight + 10)
+  }
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    syncScrollState(e.currentTarget)
+  }
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      if (isAtBottom) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+      }
+      syncScrollState(scrollRef.current)
+    }
+  }, [messages, isTyping, isAtBottom])
+
+  useEffect(() => {
+    let frameId = 0
+    let lastTime = 0
+    const samples: number[] = []
+
+    const tick = (time: number) => {
+      if (lastTime > 0) {
+        const delta = time - lastTime
+        samples.push(delta)
+        if (samples.length > 30) {
+          samples.shift()
+        }
+        const avg =
+          samples.reduce((sum, value) => sum + value, 0) / samples.length
+        setPerfStats({
+          fps: avg > 0 ? Math.round(1000 / avg) : 0,
+          frameMs: Math.round(avg || 0),
+        })
+      }
+      lastTime = time
+      frameId = window.requestAnimationFrame(tick)
+    }
+
+    frameId = window.requestAnimationFrame(tick)
+    return () => window.cancelAnimationFrame(frameId)
+  }, [])
+
+  const isStable = isChatConnected
+
+  const handleSend = () => {
+    if (!input.trim() || !canSend) return
+    if (sendMessage(input.trim())) {
+      setInput("")
+    }
+  }
+
+  return (
+    <div className="bg-background/95 flex h-full flex-col">
+      <PageHeader
+        title={t("navigation.chat")}
+        className={`transition-shadow ${
+          hasScrolled ? "shadow-sm" : "shadow-none"
+        }`}
+        titleExtra={
+          <div className="flex items-center gap-3">
+            {hasConfiguredModels && (
+              <ModelSelector
+                defaultModelName={defaultModelName}
+                apiKeyModels={apiKeyModels}
+                oauthModels={oauthModels}
+                localModels={localModels}
+                onValueChange={handleSetDefault}
+              />
+            )}
+            <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-900">
+              <span className="relative flex size-2 shrink-0">
+                <span className="absolute inline-flex size-full rounded-full bg-orange-500/35" />
+                <span className="relative inline-flex size-2 rounded-full bg-orange-500" />
+              </span>
+              <span>{t("chat.status.stable", { value: isStable ? "Yes" : "No" })}</span>
+              <span className="text-orange-700/80">
+                {t("chat.status.metrics", {
+                  fps: perfStats.fps,
+                  ms: perfStats.frameMs,
+                })}
+              </span>
+            </div>
+          </div>
+        }
+      >
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={newChat}
+          className="h-9 gap-2"
+        >
+          <IconPlus className="size-4" />
+          <span className="hidden sm:inline">{t("chat.newChat")}</span>
+        </Button>
+
+        <SessionHistoryMenu
+          sessions={sessions}
+          activeSessionId={activeSessionId}
+          hasMore={hasMore}
+          loadError={loadError}
+          loadErrorMessage={loadErrorMessage}
+          observerRef={observerRef}
+          onOpenChange={(open) => {
+            if (open) {
+              void loadSessions(true)
+            }
+          }}
+          onSwitchSession={switchSession}
+          onDeleteSession={handleDeleteSession}
+        />
+      </PageHeader>
+
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="min-h-0 flex-1 overflow-y-auto px-4 py-6 md:px-8 lg:px-24 xl:px-48"
+      >
+        <div className="mx-auto flex w-full max-w-250 flex-col gap-8 pb-8">
+          {messages.length === 0 && !isTyping && (
+            <ChatEmptyState
+              hasConfiguredModels={hasConfiguredModels}
+              defaultModelName={defaultModelName}
+              isConnected={isGatewayRunning}
+              onPromptSelect={setInput}
+            />
+          )}
+
+          {messages.map((msg) => (
+            <div key={msg.id} className="flex w-full">
+              {msg.role === "assistant" ? (
+                <AssistantMessage
+                  content={msg.content}
+                  timestamp={msg.timestamp}
+                />
+              ) : (
+                <UserMessage content={msg.content} />
+              )}
+            </div>
+          ))}
+
+          {isTyping && <TypingIndicator />}
+        </div>
+      </div>
+
+      <ChatComposer
+        input={input}
+        onInputChange={setInput}
+        onSend={handleSend}
+        isConnected={isChatConnected}
+        hasDefaultModel={Boolean(defaultModelName)}
+        blockedReason={blockedReason}
+        errorDetail={errorDetail}
+      />
+    </div>
+  )
+}
+
+function getComposerBlockedReason({
+  hasDefaultModel,
+  isGatewayRunning,
+  isChatConnected,
+  defaultModel,
+  t,
+}: {
+  hasDefaultModel: boolean
+  isGatewayRunning: boolean
+  isChatConnected: boolean
+  defaultModel: {
+    auth_method?: string
+    api_base?: string
+  } | null
+  t: (key: string) => string
+}) {
+  if (!hasDefaultModel) {
+    return t("chat.composerBlocked.noDefaultModel")
+  }
+
+  if (!isGatewayRunning) {
+    if (isLocalLikeModel(defaultModel)) {
+      return t("chat.composerBlocked.localGatewayOffline")
+    }
+    return t("chat.composerBlocked.gatewayOffline")
+  }
+
+  if (!isChatConnected) {
+    if (isLocalLikeModel(defaultModel)) {
+      return t("chat.composerBlocked.localModelUnavailable")
+    }
+    return t("chat.composerBlocked.apiModelUnavailable")
+  }
+
+  return ""
+}
+
+function isLocalLikeModel(
+  model: {
+    auth_method?: string
+    api_base?: string
+  } | null,
+) {
+  if (!model) {
+    return false
+  }
+
+  return Boolean(
+    model.auth_method === "local" ||
+      model.api_base?.includes("localhost") ||
+      model.api_base?.includes("127.0.0.1"),
+  )
+}
