@@ -7,7 +7,7 @@
 [![Gateway: Enabled](https://img.shields.io/badge/Gateway-Multi--Channel-111827)](#channel-integrations)
 
 <p align="center">
-  <img src="./trenchsi/assets/agent-avatar.png" alt="Trenchsi cyborg avatar" width="260" />
+  <img src="./trenchsi/assets/agent-avatar.png" alt="Trenchsi shrimp avatar" width="260" />
 </p>
 
 Trenchsi is a lightweight AI agent focused on practical work: direct chat in the terminal, configurable model providers, workspace memory, skills, scheduled jobs, and message-based integrations such as Telegram and Discord.
