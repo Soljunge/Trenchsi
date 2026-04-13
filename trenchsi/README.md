@@ -1,5 +1,9 @@
 # Trenchsi Core
 
+<p align="center">
+  <img src="./assets/agent-avatar.png" alt="Trenchsi shrimp avatar" width="220" />
+</p>
+
 This directory contains the Trenchsi agent core: the Go CLI, workspace scaffold, provider configuration, channel integrations, and supporting docs.
 
 For the main project overview and quick start, go to [the repository README](../README.md).
