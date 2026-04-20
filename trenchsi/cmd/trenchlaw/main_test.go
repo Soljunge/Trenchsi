@@ -43,6 +43,7 @@ func TestNewJameclawCommand(t *testing.T) {
 		"migrate",
 		"model",
 		"onboard",
+		"run",
 		"skills",
 		"status",
 		"uninstall",

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync/atomic"
 
@@ -88,6 +89,7 @@ type Config struct {
 	Bindings  []AgentBinding  `json:"bindings,omitempty"`
 	Session   SessionConfig   `json:"session,omitempty"`
 	Channels  ChannelsConfig  `json:"channels"`
+	Trading   TradingConfig   `json:"trading,omitempty"`
 	ModelList []*ModelConfig  `json:"model_list"` // New model-centric provider configuration
 	Gateway   GatewayConfig   `json:"gateway"`
 	Hooks     HooksConfig     `json:"hooks,omitempty"`
@@ -934,6 +936,45 @@ type VoiceConfig struct {
 	ElevenLabsAPIKey  string `json:"elevenlabs_api_key,omitempty" env:"TRENCHLAW_VOICE_ELEVENLABS_API_KEY"`
 }
 
+// TradingConfig configures the optional Solana trading runner.
+// Secrets are intentionally left out of persisted config and are loaded from env.
+type TradingConfig struct {
+	Enabled                   bool    `json:"enabled"                     env:"TRENCHLAW_TRADING_ENABLED"`
+	Strategy                  string  `json:"strategy,omitempty"          env:"TRENCHLAW_TRADING_STRATEGY"`
+	Network                   string  `json:"network,omitempty"           env:"SOLANA_NETWORK"`
+	RPCURL                    string  `json:"rpc_url,omitempty"           env:"SOLANA_RPC_URL"`
+	WSURL                     string  `json:"ws_url,omitempty"            env:"SOLANA_WS_URL"`
+	MaxPositionSOL            float64 `json:"max_position_sol,omitempty"  env:"MAX_POSITION_SOL"`
+	MaxDailyLossSOL           float64 `json:"max_daily_loss_sol,omitempty" env:"MAX_DAILY_LOSS_SOL"`
+	MaxOpenPositions          int     `json:"max_open_positions,omitempty" env:"MAX_OPEN_POSITIONS"`
+	DefaultSlippageBps        int     `json:"default_slippage_bps,omitempty" env:"DEFAULT_SLIPPAGE_BPS"`
+	TakeProfitPct             float64 `json:"take_profit_pct,omitempty"   env:"TAKE_PROFIT_PCT"`
+	StopLossPct               float64 `json:"stop_loss_pct,omitempty"     env:"STOP_LOSS_PCT"`
+	TrailingStopPct           float64 `json:"trailing_stop_pct,omitempty" env:"TRAILING_STOP_PCT"`
+	TradeCooldownSeconds      int     `json:"trade_cooldown_seconds,omitempty" env:"TRADE_COOLDOWN_SECONDS"`
+	MinLiquidityUSD           float64 `json:"min_liquidity_usd,omitempty" env:"MIN_LIQUIDITY_USD"`
+	MinVolumeUSD              float64 `json:"min_volume_usd,omitempty"    env:"MIN_VOLUME_USD"`
+	MinMarketCapUSD           float64 `json:"min_market_cap_usd,omitempty" env:"MIN_MARKET_CAP_USD"`
+	MaxMarketCapUSD           float64 `json:"max_market_cap_usd,omitempty" env:"MAX_MARKET_CAP_USD"`
+	MinOrganicScore           float64 `json:"min_organic_score,omitempty" env:"MIN_ORGANIC_SCORE"`
+	MaxPriceImpactPct         float64 `json:"max_price_impact_pct,omitempty" env:"MAX_PRICE_IMPACT_PCT"`
+	MaxVolatilityPct          float64 `json:"max_volatility_pct,omitempty" env:"MAX_VOLATILITY_PCT"`
+	MaxHolderConcentrationPct float64 `json:"max_holder_concentration_pct,omitempty" env:"MAX_HOLDER_CONCENTRATION_PCT"`
+	ReserveSOL                float64 `json:"reserve_sol,omitempty"       env:"SOLANA_RESERVE_SOL"`
+	EnablePaperTrading        bool    `json:"enable_paper_trading,omitempty" env:"ENABLE_PAPER_TRADING"`
+	EnableSells               bool    `json:"enable_sells,omitempty"     env:"ENABLE_SELLS"`
+	DryRun                    bool    `json:"dry_run,omitempty"          env:"DRY_RUN"`
+	MaxQuoteAgeSlots          int     `json:"max_quote_age_slots,omitempty" env:"MAX_QUOTE_AGE_SLOTS"`
+	PollIntervalSeconds       int     `json:"poll_interval_seconds,omitempty" env:"TRADING_POLL_INTERVAL_SECONDS"`
+	MonitorIntervalSeconds    int     `json:"monitor_interval_seconds,omitempty" env:"TRADING_MONITOR_INTERVAL_SECONDS"`
+	MaxHoldMinutes            int     `json:"max_hold_minutes,omitempty" env:"MAX_HOLD_DURATION_MINUTES"`
+	CandidateLimit            int     `json:"candidate_limit,omitempty" env:"TOKEN_SCAN_LIMIT"`
+	ScanCategory              string  `json:"scan_category,omitempty"    env:"TRADING_SCAN_CATEGORY"`
+	ScanInterval              string  `json:"scan_interval,omitempty"    env:"TRADING_SCAN_INTERVAL"`
+	AllowDuplicateEntries     bool    `json:"allow_duplicate_entries,omitempty" env:"ALLOW_DUPLICATE_ENTRIES"`
+	EmergencyHalt             bool    `json:"emergency_halt,omitempty"  env:"EMERGENCY_HALT"`
+}
+
 // ModelConfig represents a model-centric provider configuration.
 // It allows adding new providers (especially OpenAI-compatible ones) via configuration only.
 // The model field uses protocol prefix format: [protocol/]model-identifier
@@ -1357,7 +1398,14 @@ func LoadConfig(path string) (*Config, error) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			logger.WarnF("config file not found, using default config", map[string]any{"path": path})
-			return DefaultConfig(), nil
+			cfg := DefaultConfig()
+			if err := env.Parse(cfg); err != nil {
+				return nil, err
+			}
+			if err := applyTradingEnv(cfg); err != nil {
+				return nil, err
+			}
+			return cfg, nil
 		}
 		logger.Errorf("failed to read config file: %v", err)
 		return nil, err
@@ -1372,7 +1420,14 @@ func LoadConfig(path string) (*Config, error) {
 	}
 	if len(data) <= 10 {
 		logger.Warn(fmt.Sprintf("content is [%s]", string(data)))
-		return DefaultConfig().WithSecurity(&SecurityConfig{}), nil
+		cfg := DefaultConfig().WithSecurity(&SecurityConfig{})
+		if err := env.Parse(cfg); err != nil {
+			return nil, err
+		}
+		if err := applyTradingEnv(cfg); err != nil {
+			return nil, err
+		}
+		return cfg, nil
 	}
 
 	// Load config based on detected version
@@ -1436,6 +1491,9 @@ func LoadConfig(path string) (*Config, error) {
 	if err := env.Parse(cfg); err != nil {
 		return nil, err
 	}
+	if err := applyTradingEnv(cfg); err != nil {
+		return nil, err
+	}
 
 	if err := resolveAPIKeys(cfg.ModelList, filepath.Dir(path)); err != nil {
 		return nil, err
@@ -1469,6 +1527,169 @@ func LoadConfig(path string) (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func applyTradingEnv(cfg *Config) error {
+	if cfg == nil {
+		return nil
+	}
+
+	trading := cfg.Trading
+	if err := env.Parse(&trading); err != nil {
+		return err
+	}
+	if value, ok := os.LookupEnv("SOLANA_NETWORK"); ok {
+		trading.Network = strings.TrimSpace(value)
+	}
+	if value, ok := os.LookupEnv("SOLANA_RPC_URL"); ok {
+		trading.RPCURL = strings.TrimSpace(value)
+	}
+	if value, ok := os.LookupEnv("SOLANA_WS_URL"); ok {
+		trading.WSURL = strings.TrimSpace(value)
+	}
+	if value, ok := os.LookupEnv("MAX_POSITION_SOL"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.MaxPositionSOL = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("MAX_DAILY_LOSS_SOL"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.MaxDailyLossSOL = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("MAX_OPEN_POSITIONS"); ok {
+		if parsed, err := strconv.Atoi(value); err == nil {
+			trading.MaxOpenPositions = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("DEFAULT_SLIPPAGE_BPS"); ok {
+		if parsed, err := strconv.Atoi(value); err == nil {
+			trading.DefaultSlippageBps = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("TAKE_PROFIT_PCT"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.TakeProfitPct = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("STOP_LOSS_PCT"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.StopLossPct = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("TRAILING_STOP_PCT"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.TrailingStopPct = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("TRADE_COOLDOWN_SECONDS"); ok {
+		if parsed, err := strconv.Atoi(value); err == nil {
+			trading.TradeCooldownSeconds = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("MAX_HOLD_DURATION_MINUTES"); ok {
+		if parsed, err := strconv.Atoi(value); err == nil {
+			trading.MaxHoldMinutes = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("MIN_LIQUIDITY_USD"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.MinLiquidityUSD = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("MIN_VOLUME_USD"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.MinVolumeUSD = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("MIN_MARKET_CAP_USD"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.MinMarketCapUSD = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("MAX_MARKET_CAP_USD"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.MaxMarketCapUSD = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("MIN_ORGANIC_SCORE"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.MinOrganicScore = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("MAX_PRICE_IMPACT_PCT"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.MaxPriceImpactPct = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("MAX_VOLATILITY_PCT"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.MaxVolatilityPct = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("MAX_HOLDER_CONCENTRATION_PCT"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.MaxHolderConcentrationPct = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("SOLANA_RESERVE_SOL"); ok {
+		if parsed, err := strconv.ParseFloat(value, 64); err == nil {
+			trading.ReserveSOL = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("ENABLE_PAPER_TRADING"); ok {
+		if parsed, err := strconv.ParseBool(value); err == nil {
+			trading.EnablePaperTrading = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("ENABLE_SELLS"); ok {
+		if parsed, err := strconv.ParseBool(value); err == nil {
+			trading.EnableSells = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("DRY_RUN"); ok {
+		if parsed, err := strconv.ParseBool(value); err == nil {
+			trading.DryRun = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("MAX_QUOTE_AGE_SLOTS"); ok {
+		if parsed, err := strconv.Atoi(value); err == nil {
+			trading.MaxQuoteAgeSlots = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("TRADING_POLL_INTERVAL_SECONDS"); ok {
+		if parsed, err := strconv.Atoi(value); err == nil {
+			trading.PollIntervalSeconds = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("TRADING_MONITOR_INTERVAL_SECONDS"); ok {
+		if parsed, err := strconv.Atoi(value); err == nil {
+			trading.MonitorIntervalSeconds = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("TOKEN_SCAN_LIMIT"); ok {
+		if parsed, err := strconv.Atoi(value); err == nil {
+			trading.CandidateLimit = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("TRADING_SCAN_CATEGORY"); ok {
+		trading.ScanCategory = strings.TrimSpace(value)
+	}
+	if value, ok := os.LookupEnv("TRADING_SCAN_INTERVAL"); ok {
+		trading.ScanInterval = strings.TrimSpace(value)
+	}
+	if value, ok := os.LookupEnv("ALLOW_DUPLICATE_ENTRIES"); ok {
+		if parsed, err := strconv.ParseBool(value); err == nil {
+			trading.AllowDuplicateEntries = parsed
+		}
+	}
+	if value, ok := os.LookupEnv("EMERGENCY_HALT"); ok {
+		if parsed, err := strconv.ParseBool(value); err == nil {
+			trading.EmergencyHalt = parsed
+		}
+	}
+	cfg.Trading = trading
+	return nil
 }
 
 func makeBackup(path string) error {

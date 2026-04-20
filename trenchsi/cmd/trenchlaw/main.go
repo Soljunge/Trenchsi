@@ -26,6 +26,7 @@ import (
 	"github.com/sipeed/trenchlaw/cmd/trenchlaw/internal/migrate"
 	"github.com/sipeed/trenchlaw/cmd/trenchlaw/internal/model"
 	"github.com/sipeed/trenchlaw/cmd/trenchlaw/internal/onboard"
+	"github.com/sipeed/trenchlaw/cmd/trenchlaw/internal/run"
 	"github.com/sipeed/trenchlaw/cmd/trenchlaw/internal/skills"
 	"github.com/sipeed/trenchlaw/cmd/trenchlaw/internal/status"
 	"github.com/sipeed/trenchlaw/cmd/trenchlaw/internal/uninstall"
@@ -105,6 +106,7 @@ func NewJameclawCommand() *cobra.Command {
 		agent.NewAgentCommand(),
 		auth.NewAuthCommand(),
 		gateway.NewGatewayCommand(),
+		run.NewRunCommand(),
 		status.NewStatusCommand(),
 		cron.NewCronCommand(),
 		migrate.NewMigrateCommand(),
@@ -119,8 +121,8 @@ func NewJameclawCommand() *cobra.Command {
 
 const (
 	colorOrange = "\033[1;38;2;249;115;22m"
-	colorReset = "\033[0m"
-	banner     = "\r\n" +
+	colorReset  = "\033[0m"
+	banner      = "\r\n" +
 		colorOrange + "████████╗██████╗ ███████╗███╗   ██╗ ██████╗██╗  ██╗ ██████╗██╗      █████╗ ██╗    ██╗\n" +
 		colorOrange + "╚══██╔══╝██╔══██╗██╔════╝████╗  ██║██╔════╝██║  ██║██╔════╝██║     ██╔══██╗██║    ██║\n" +
 		colorOrange + "   ██║   ██████╔╝█████╗  ██╔██╗ ██║██║     ███████║██║     ██║     ███████║██║ █╗ ██║\n" +
