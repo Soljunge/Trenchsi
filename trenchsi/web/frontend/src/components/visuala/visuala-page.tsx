@@ -4,17 +4,19 @@ import {
   IconPlayerPause,
   IconPlugConnected,
   IconTerminal2,
+  IconTrendingUp,
 } from "@tabler/icons-react"
+import { useQuery } from "@tanstack/react-query"
 import type { ComponentType } from "react"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import agentAvatarUrl from "../../../../../assets/agent-avatar.png"
-
+import { getAppConfig } from "@/api/channels"
 import { PageHeader } from "@/components/page-header"
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -23,6 +25,8 @@ import { useChatModels } from "@/hooks/use-chat-models"
 import { useGateway } from "@/hooks/use-gateway"
 import { useGatewayLogs } from "@/hooks/use-gateway-logs"
 import { cn } from "@/lib/utils"
+
+import agentAvatarUrl from "../../../../../assets/agent-avatar.png"
 
 type ActivityTone = "thinking" | "tool" | "io" | "idle"
 
@@ -34,6 +38,8 @@ interface ActivityItem {
   Icon: ComponentType<{ className?: string }>
 }
 
+type TradingConfig = Record<string, unknown>
+
 const MAX_EVENTS = 12
 
 export function VisualaPage() {
@@ -41,12 +47,22 @@ export function VisualaPage() {
   const { state } = useGateway()
   const { logs } = useGatewayLogs()
   const { defaultModel } = useChatModels({ isConnected: state === "running" })
+  const {
+    data: appConfig,
+    isLoading: isTradingConfigLoading,
+    error: tradingConfigError,
+  } = useQuery({
+    queryKey: ["app-config"],
+    queryFn: getAppConfig,
+    staleTime: 30_000,
+  })
   const [showSummary, setShowSummary] = useState(true)
   const [showFlow, setShowFlow] = useState(true)
   const [showTimeline, setShowTimeline] = useState(true)
   const [showThinking, setShowThinking] = useState(true)
   const [showTools, setShowTools] = useState(true)
   const [showMemory, setShowMemory] = useState(true)
+  const [showTrading, setShowTrading] = useState(true)
   const [showAgentIcon, setShowAgentIcon] = useState(true)
   const [showCustomize, setShowCustomize] = useState(false)
 
@@ -58,6 +74,9 @@ export function VisualaPage() {
   const metrics = summarizeLogs(logs, state)
   const providerLabel = describeProvider(defaultModel)
   const activeFlowStep = resolveActiveFlowStep(metrics)
+  const tradingConfig = asRecord(asRecord(appConfig).trading) as TradingConfig
+  const tradingStatusLabel = describeTradingStatus(tradingConfig, t)
+  const tradingModeLabel = describeTradingMode(tradingConfig, t)
 
   useEffect(() => {
     const handleToggle = () => {
@@ -77,9 +96,11 @@ export function VisualaPage() {
       <div className="flex-1 overflow-auto px-6 py-3">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 pb-8">
           {showCustomize ? (
-            <Card className="border border-border/60" size="sm">
+            <Card className="border-border/60 border" size="sm">
               <CardHeader>
-                <CardTitle>{t("pages.agent.visuala.customize_title")}</CardTitle>
+                <CardTitle>
+                  {t("pages.agent.visuala.customize_title")}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-3 md:grid-cols-3">
@@ -114,6 +135,11 @@ export function VisualaPage() {
                     onCheckedChange={setShowMemory}
                   />
                   <ToggleRow
+                    label={t("pages.agent.visuala.customize.trading")}
+                    checked={showTrading}
+                    onCheckedChange={setShowTrading}
+                  />
+                  <ToggleRow
                     label={t("pages.agent.visuala.agent_icon.title")}
                     checked={showAgentIcon}
                     onCheckedChange={setShowAgentIcon}
@@ -124,58 +150,133 @@ export function VisualaPage() {
           ) : null}
 
           {showSummary ? (
-          <Card className="border border-border/60" size="sm">
-            <CardHeader className="flex flex-row items-start justify-between gap-4">
-              <div>
-                <CardTitle>{t("pages.agent.visuala.hero_title")}</CardTitle>
-              </div>
-              {showAgentIcon ? (
-                <AgentIconDisplay
-                  title={t("pages.agent.visuala.agent_icon.title")}
-                  imageAlt={t("pages.agent.visuala.agent_icon.alt")}
-                />
-              ) : null}
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3 md:grid-cols-5">
-                <SimpleBox
-                  label={t("pages.agent.visuala.metrics.gateway")}
-                  value={t(`pages.agent.visuala.gateway_state.${state}`)}
-                />
-                <SimpleBox
-                  label={t("pages.agent.visuala.metrics.phase")}
-                  value={t(`pages.agent.visuala.phase.${metrics.phase}`)}
-                />
-                <SimpleBox
-                  label={t("pages.agent.visuala.metrics.tokens")}
-                  value={formatTokenUsage(metrics.tokensUsed, t("pages.agent.visuala.metrics.tokens_unknown"))}
-                />
-                {showThinking ? (
-                  <SimpleBox
-                    label={t("pages.agent.visuala.cards.thinking")}
-                    value={String(metrics.thinkingCount)}
+            <Card className="border-border/60 border" size="sm">
+              <CardHeader className="flex flex-row items-start justify-between gap-4">
+                <div>
+                  <CardTitle>{t("pages.agent.visuala.hero_title")}</CardTitle>
+                </div>
+                {showAgentIcon ? (
+                  <AgentIconDisplay
+                    title={t("pages.agent.visuala.agent_icon.title")}
+                    imageAlt={t("pages.agent.visuala.agent_icon.alt")}
                   />
                 ) : null}
-                {showTools ? (
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-3 md:grid-cols-5">
                   <SimpleBox
-                    label={t("pages.agent.visuala.cards.tools")}
-                    value={String(metrics.toolCount)}
+                    label={t("pages.agent.visuala.metrics.gateway")}
+                    value={t(`pages.agent.visuala.gateway_state.${state}`)}
                   />
-                ) : null}
-                {showMemory ? (
                   <SimpleBox
-                    label={t("pages.agent.visuala.cards.memory")}
-                    value={t(
-                      `pages.agent.visuala.memory_state.${metrics.memoryState}`,
+                    label={t("pages.agent.visuala.metrics.phase")}
+                    value={t(`pages.agent.visuala.phase.${metrics.phase}`)}
+                  />
+                  <SimpleBox
+                    label={t("pages.agent.visuala.metrics.tokens")}
+                    value={formatTokenUsage(
+                      metrics.tokensUsed,
+                      t("pages.agent.visuala.metrics.tokens_unknown"),
                     )}
                   />
-                ) : null}
-              </div>
-            </CardContent>
-          </Card>
+                  {showThinking ? (
+                    <SimpleBox
+                      label={t("pages.agent.visuala.cards.thinking")}
+                      value={String(metrics.thinkingCount)}
+                    />
+                  ) : null}
+                  {showTools ? (
+                    <SimpleBox
+                      label={t("pages.agent.visuala.cards.tools")}
+                      value={String(metrics.toolCount)}
+                    />
+                  ) : null}
+                  {showMemory ? (
+                    <SimpleBox
+                      label={t("pages.agent.visuala.cards.memory")}
+                      value={t(
+                        `pages.agent.visuala.memory_state.${metrics.memoryState}`,
+                      )}
+                    />
+                  ) : null}
+                </div>
+              </CardContent>
+            </Card>
           ) : null}
 
-          {showSummary && (showFlow || showTimeline) ? (
+          {showTrading ? (
+            <Card className="border-border/60 border" size="sm">
+              <CardHeader className="flex flex-row items-start justify-between gap-4">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <IconTrendingUp className="size-4 text-emerald-600" />
+                    {t("pages.agent.visuala.trading.title")}
+                  </CardTitle>
+                  <CardDescription>
+                    {t("pages.agent.visuala.trading.description")}
+                  </CardDescription>
+                </div>
+                <div className="flex flex-wrap justify-end gap-2 text-[11px] tracking-[0.18em] uppercase">
+                  <TradingBadge tone={tradingStatusTone(tradingConfig)}>
+                    {tradingStatusLabel}
+                  </TradingBadge>
+                  <TradingBadge
+                    tone={asBool(tradingConfig.dry_run) ? "warning" : "success"}
+                  >
+                    {tradingModeLabel}
+                  </TradingBadge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {tradingConfigError ? (
+                  <EmptyState text={t("pages.agent.visuala.trading.error")} />
+                ) : isTradingConfigLoading ? (
+                  <EmptyState text={t("labels.loading")} />
+                ) : (
+                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    <SimpleBox
+                      label={t("pages.agent.visuala.trading.fields.strategy")}
+                      value={formatText(
+                        tradingConfig.strategy,
+                        t("pages.agent.visuala.trading.fallbacks.strategy"),
+                      )}
+                    />
+                    <SimpleBox
+                      label={t("pages.agent.visuala.trading.fields.network")}
+                      value={formatText(
+                        tradingConfig.network,
+                        t("pages.agent.visuala.trading.fallbacks.network"),
+                      )}
+                    />
+                    <SimpleBox
+                      label={t("pages.agent.visuala.trading.fields.position")}
+                      value={formatSol(
+                        tradingConfig.max_position_sol,
+                        t("pages.agent.visuala.trading.fallbacks.position"),
+                      )}
+                    />
+                    <SimpleBox
+                      label={t("pages.agent.visuala.trading.fields.slippage")}
+                      value={formatBps(
+                        tradingConfig.default_slippage_bps,
+                        t("pages.agent.visuala.trading.fallbacks.slippage"),
+                      )}
+                    />
+                    <SimpleBox
+                      label={t("pages.agent.visuala.trading.fields.risk")}
+                      value={formatRiskSummary(tradingConfig, t)}
+                    />
+                    <SimpleBox
+                      label={t("pages.agent.visuala.trading.fields.filters")}
+                      value={formatFilterSummary(tradingConfig, t)}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {(showSummary || showTrading) && (showFlow || showTimeline) ? (
             <div className="flex justify-center">
               <div className="bg-border h-8 w-px" />
             </div>
@@ -184,7 +285,7 @@ export function VisualaPage() {
           {showFlow || showTimeline ? (
             <div className="flex flex-col gap-6">
               {showFlow ? (
-                <Card className="border border-border/60" size="sm">
+                <Card className="border-border/60 border" size="sm">
                   <CardHeader>
                     <CardTitle>{t("pages.agent.visuala.flow.title")}</CardTitle>
                   </CardHeader>
@@ -232,9 +333,11 @@ export function VisualaPage() {
               ) : null}
 
               {showTimeline ? (
-                <Card className="border border-border/60" size="sm">
+                <Card className="border-border/60 border" size="sm">
                   <CardHeader>
-                    <CardTitle>{t("pages.agent.visuala.timeline_title")}</CardTitle>
+                    <CardTitle>
+                      {t("pages.agent.visuala.timeline_title")}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {visualEvents.length > 0 ? (
@@ -244,7 +347,7 @@ export function VisualaPage() {
                             {index < visualEvents.length - 1 ? (
                               <div className="bg-border absolute top-8 left-3 h-[calc(100%+0.5rem)] w-px" />
                             ) : null}
-                            <div className="bg-background absolute top-3 left-0 flex size-6 items-center justify-center border border-border">
+                            <div className="bg-background border-border absolute top-3 left-0 flex size-6 items-center justify-center border">
                               <event.Icon className="size-3.5" />
                             </div>
                             <div
@@ -291,7 +394,7 @@ function ToggleRow({
   onCheckedChange: (checked: boolean) => void
 }) {
   return (
-    <label className="flex items-center justify-between border border-border px-3 py-3 text-sm">
+    <label className="border-border flex items-center justify-between border px-3 py-3 text-sm">
       <span>{label}</span>
       <Switch checked={checked} onCheckedChange={onCheckedChange} size="sm" />
     </label>
@@ -309,7 +412,7 @@ function AgentIconDisplay({
 
   return (
     <div className="flex shrink-0 items-center gap-3 rounded-2xl border border-orange-200/70 bg-orange-50/60 px-3 py-2">
-      <div className="from-amber-100 via-orange-50 to-white flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br shadow-[0_10px_30px_-18px_rgba(194,65,12,0.7)]">
+      <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br from-amber-100 via-orange-50 to-white shadow-[0_10px_30px_-18px_rgba(194,65,12,0.7)]">
         {imageFailed ? (
           <span className="text-2xl">🪖</span>
         ) : (
@@ -322,7 +425,7 @@ function AgentIconDisplay({
         )}
       </div>
       <div className="hidden min-w-0 sm:block">
-        <div className="text-[11px] uppercase tracking-[0.18em] text-orange-700">
+        <div className="text-[11px] tracking-[0.18em] text-orange-700 uppercase">
           {title}
         </div>
         <div className="mt-1 text-sm font-medium">Trenchsi</div>
@@ -333,12 +436,32 @@ function AgentIconDisplay({
 
 function SimpleBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-border px-3 py-3">
-      <div className="text-muted-foreground text-[11px] uppercase tracking-[0.18em]">
+    <div className="border-border border px-3 py-3">
+      <div className="text-muted-foreground text-[11px] tracking-[0.18em] uppercase">
         {label}
       </div>
       <div className="mt-2 text-base font-medium">{value}</div>
     </div>
+  )
+}
+
+function TradingBadge({
+  tone,
+  children,
+}: {
+  tone: "success" | "warning" | "neutral"
+  children: string
+}) {
+  const toneClasses: Record<"success" | "warning" | "neutral", string> = {
+    success: "border-emerald-200 bg-emerald-50 text-emerald-900",
+    warning: "border-amber-200 bg-amber-50 text-amber-900",
+    neutral: "border-border bg-background text-foreground",
+  }
+
+  return (
+    <span className={cn("rounded-full border px-2.5 py-1", toneClasses[tone])}>
+      {children}
+    </span>
   )
 }
 
@@ -352,13 +475,8 @@ function SimpleFlowBox({
   tone: ActivityTone
 }) {
   return (
-    <div
-      className={cn(
-        "border px-4 py-4 text-center",
-        boxToneClasses[tone],
-      )}
-    >
-      <div className="text-xs uppercase tracking-[0.18em] opacity-70">
+    <div className={cn("border px-4 py-4 text-center", boxToneClasses[tone])}>
+      <div className="text-xs tracking-[0.18em] uppercase opacity-70">
         {title}
       </div>
       <div className="mt-2 text-sm font-medium">{value}</div>
@@ -381,9 +499,9 @@ function FlowStage({
 }) {
   return (
     <div className="space-y-2">
-      <div className="text-muted-foreground flex items-center justify-center gap-2 text-center text-[11px] font-medium uppercase tracking-[0.18em]">
+      <div className="text-muted-foreground flex items-center justify-center gap-2 text-center text-[11px] font-medium tracking-[0.18em] uppercase">
         {active ? (
-          <span className="size-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
+          <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
         ) : (
           <span className="bg-border size-2 rounded-full" />
         )}
@@ -473,6 +591,145 @@ function createActivityItem(line: string, id: string): ActivityItem {
     tone: "idle",
     Icon: IconClockHour4,
   }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>
+  }
+  return {}
+}
+
+function asBool(value: unknown): boolean {
+  return value === true
+}
+
+function asNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined
+}
+
+function asString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : ""
+}
+
+function formatText(value: unknown, fallback: string): string {
+  const text = asString(value)
+  return text !== "" ? text : fallback
+}
+
+function formatSol(value: unknown, fallback: string): string {
+  const number = asNumber(value)
+  if (number === undefined) return fallback
+  return `${number.toFixed(number >= 1 ? 2 : 4)} SOL`
+}
+
+function formatBps(value: unknown, fallback: string): string {
+  const number = asNumber(value)
+  if (number === undefined) return fallback
+  return `${Math.round(number)} bps`
+}
+
+function formatPercent(value: unknown, fallback: string): string {
+  const number = asNumber(value)
+  if (number === undefined) return fallback
+  return `${number.toFixed(number >= 10 ? 0 : 1)}%`
+}
+
+function formatCurrency(value: unknown, fallback: string): string {
+  const number = asNumber(value)
+  if (number === undefined) return fallback
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(number)
+}
+
+function formatDurationSeconds(value: unknown, fallback: string): string {
+  const number = asNumber(value)
+  if (number === undefined) return fallback
+  if (number % 60 === 0) {
+    return `${number / 60}m`
+  }
+  return `${number}s`
+}
+
+function formatRiskSummary(
+  tradingConfig: TradingConfig,
+  t: (key: string) => string,
+): string {
+  return [
+    `${t("pages.agent.visuala.trading.fields.take_profit")}: ${formatPercent(tradingConfig.take_profit_pct, t("pages.agent.visuala.trading.fallbacks.take_profit"))}`,
+    `${t("pages.agent.visuala.trading.fields.stop_loss")}: ${formatPercent(tradingConfig.stop_loss_pct, t("pages.agent.visuala.trading.fallbacks.stop_loss"))}`,
+    `${t("pages.agent.visuala.trading.fields.trailing_stop")}: ${formatPercent(tradingConfig.trailing_stop_pct, t("pages.agent.visuala.trading.fallbacks.trailing_stop"))}`,
+  ].join(" · ")
+}
+
+function formatFilterSummary(
+  tradingConfig: TradingConfig,
+  t: (key: string) => string,
+): string {
+  return [
+    `${t("pages.agent.visuala.trading.fields.liquidity")}: ${formatCurrency(tradingConfig.min_liquidity_usd, t("pages.agent.visuala.trading.fallbacks.liquidity"))}`,
+    `${t("pages.agent.visuala.trading.fields.volume")}: ${formatCurrency(tradingConfig.min_volume_usd, t("pages.agent.visuala.trading.fallbacks.volume"))}`,
+    `${t("pages.agent.visuala.trading.fields.cooldown")}: ${formatDurationSeconds(tradingConfig.trade_cooldown_seconds, t("pages.agent.visuala.trading.fallbacks.cooldown"))}`,
+  ].join(" · ")
+}
+
+function describeTradingStatus(
+  tradingConfig: TradingConfig,
+  t: (key: string) => string,
+): string {
+  const parts = [
+    asBool(tradingConfig.enabled)
+      ? t("pages.agent.visuala.trading.status.enabled")
+      : t("pages.agent.visuala.trading.status.disabled"),
+    asBool(tradingConfig.enable_paper_trading)
+      ? t("pages.agent.visuala.trading.status.paper")
+      : t("pages.agent.visuala.trading.status.live"),
+  ]
+
+  if (asBool(tradingConfig.dry_run)) {
+    parts.push(t("pages.agent.visuala.trading.status.dry_run"))
+  }
+  if (asBool(tradingConfig.emergency_halt)) {
+    parts.push(t("pages.agent.visuala.trading.status.halted"))
+  }
+
+  return parts.join(" · ")
+}
+
+function describeTradingMode(
+  tradingConfig: TradingConfig,
+  t: (key: string) => string,
+): string {
+  if (asBool(tradingConfig.emergency_halt)) {
+    return t("pages.agent.visuala.trading.mode.halted")
+  }
+
+  const bits = []
+  if (asBool(tradingConfig.enable_paper_trading)) {
+    bits.push(t("pages.agent.visuala.trading.mode.paper"))
+  }
+  if (asBool(tradingConfig.dry_run)) {
+    bits.push(t("pages.agent.visuala.trading.mode.dry_run"))
+  }
+  if (bits.length === 0) {
+    bits.push(t("pages.agent.visuala.trading.mode.live"))
+  }
+  return bits.join(" · ")
+}
+
+function tradingStatusTone(
+  tradingConfig: TradingConfig,
+): "success" | "warning" | "neutral" {
+  if (asBool(tradingConfig.emergency_halt)) {
+    return "warning"
+  }
+  if (asBool(tradingConfig.enabled)) {
+    return "success"
+  }
+  return "neutral"
 }
 
 function summarizeLogs(logs: string[], gatewayState: string) {

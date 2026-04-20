@@ -474,7 +474,53 @@
           "summary": "Summary boxes",
           "flow": "Flow boxes",
           "timeline": "Timeline",
+          "trading": "Solana trading",
           "nothing_selected": "Nothing is selected. Turn on at least one section to show the view."
+        },
+        "trading": {
+          "title": "Solana trading",
+          "description": "Live Solana trading settings pulled from the backend config.",
+          "error": "Unable to load Solana trading settings.",
+          "status": {
+            "enabled": "Enabled",
+            "disabled": "Disabled",
+            "paper": "Paper trading",
+            "dry_run": "Dry run",
+            "live": "Live execution",
+            "halted": "Emergency halt"
+          },
+          "mode": {
+            "paper": "Paper",
+            "dry_run": "Dry run",
+            "live": "Live",
+            "halted": "Halted"
+          },
+          "fields": {
+            "strategy": "Strategy",
+            "network": "Network",
+            "position": "Max position",
+            "slippage": "Slippage",
+            "risk": "Risk limits",
+            "filters": "Scan filters",
+            "take_profit": "Take profit",
+            "stop_loss": "Stop loss",
+            "trailing_stop": "Trailing stop",
+            "liquidity": "Min liquidity",
+            "volume": "Min volume",
+            "cooldown": "Cooldown"
+          },
+          "fallbacks": {
+            "strategy": "Unknown strategy",
+            "network": "Unknown network",
+            "position": "Not configured",
+            "slippage": "Not configured",
+            "take_profit": "Not configured",
+            "stop_loss": "Not configured",
+            "trailing_stop": "Not configured",
+            "liquidity": "Not configured",
+            "volume": "Not configured",
+            "cooldown": "Not configured"
+          }
         },
         "flow": {
           "title": "Flow map",
