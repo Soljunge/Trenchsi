@@ -1,4 +1,4 @@
-# Trenchsi
+# Trenchsi 🪙🤖
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Built With: Go](https://img.shields.io/badge/Built%20With-Go-00ADD8?logo=go&logoColor=white)](https://go.dev/)
@@ -10,31 +10,46 @@
   <img src="./trenchsi/assets/agent-avatar.png" alt="Trenchsi shrimp avatar" width="260" />
 </p>
 
-Trenchsi is a lightweight AI agent focused on practical work: direct chat in the terminal, configurable model providers, workspace memory, skills, scheduled jobs, and message-based integrations such as Telegram and Discord.
+Trenchsi is the trench rig for memecoin operators, crypto degens, builders, and power users who want an AI agent that moves fast and stays useful.
 
-This repository contains the Trenchsi project workspace and the agent core in [`trenchsi/`](./trenchsi).
+It gives you terminal chat, model selection, workspace memory, skills, scheduled jobs, and gateway-driven channel integrations so you can keep the alpha flowing without living in five different tools.
+
+This repo contains the main project landing page plus the agent core in [`trenchsi/`](./trenchsi).
+
+## Who Uses It
+
+- Solo traders who want an AI sidekick in the terminal 🤖
+- Memecoin trenchers who need fast operator workflows 🪙
+- Crypto builders wiring agent automation into their stack ⚙️
+- Community leads running Telegram, Discord, Slack, and other channels 📣
+- Tinkerers who want reusable skills, memory, and scheduled jobs 🧠
 
 ## What The Agent Can Do
 
-- Chat directly in the terminal with a configurable default model
-- Run in multiple interfaces: terminal agent, web console, and TUI dashboard
-- Connect to external channels such as Telegram, Discord, Slack, Matrix, LINE, QQ, Weixin, DingTalk, Feishu, and more
-- Use multiple model providers through a model-centric configuration
-- Manage reusable skills for specialized workflows
-- Keep workspace context with files such as `AGENT.md`, `USER.md`, `SOUL.md`, and `MEMORY.md`
-- Schedule recurring work with built-in cron commands
-- Expose a gateway process for always-on or multi-channel agent operation
+- Chat directly in the terminal with a configurable default model 💬
+- Launch in three modes: terminal agent, web console, and TUI dashboard 🖥️
+- Connect to external channels such as Telegram, Discord, Slack, Matrix, LINE, QQ, Weixin, DingTalk, Feishu, and more 🌐
+- Use multiple model providers through a model-centric configuration 🔌
+- Manage reusable skills for specialized workflows 🛠️
+- Keep workspace context with files such as `AGENT.md`, `USER.md`, `SOUL.md`, and `MEMORY.md` 📚
+- Schedule recurring work with built-in cron commands ⏰
+- Run as a gateway for always-on or multi-channel agent operation 🚪
 
 ## Repository Layout
 
-- [`README.md`](./README.md): GitHub landing page and quick start
-- [`trenchsi/`](./trenchsi): Agent source code, docs, workspace scaffold, and packaging
-- [`trenchsi/docs/`](./trenchsi/docs): Provider, channel, and architecture docs
-- [`trenchsi/workspace/`](./trenchsi/workspace): Default workspace identity, memory, and tool instructions
+- [`README.md`](./README.md): project landing page and quick start
+- [`trenchsi/`](./trenchsi): agent source code, docs, workspace scaffold, and packaging
+- [`trenchsi/docs/`](./trenchsi/docs): provider, channel, and architecture docs
+- [`trenchsi/workspace/`](./trenchsi/workspace): default workspace identity, memory, and tool instructions
 
-## Quick Start
+## Quick Start 🚀
 
-The shortest path is: build once, run onboarding once, set a default model, then use `trenchsi`.
+Shortest path:
+
+1. Build the CLI
+2. Run onboarding
+3. Set a default model
+4. Start the agent
 
 ### 1. Build the CLI
 
@@ -108,7 +123,7 @@ Useful checks:
 ./trenchsi version
 ```
 
-## Most Used Commands
+## Most Used Commands ⚡
 
 Use these first before exploring the rest of the CLI:
 
@@ -124,9 +139,9 @@ Use these first before exploring the rest of the CLI:
 ./trenchsi cron list    # inspect scheduled jobs
 ```
 
-## Interfaces
+## Interfaces 🎛️
 
-`trenchsi` is the default entry point.
+`trenchsi` is the main entry point.
 
 - `trenchsi`: opens the startup selector in an interactive terminal
 - `trenchsi agent`: skips the selector and starts terminal chat
@@ -134,7 +149,7 @@ Use these first before exploring the rest of the CLI:
 
 If setup is incomplete, `trenchsi` sends you to onboarding first. If no default model is configured, `trenchsi agent` tells you to finish setup or choose a model.
 
-## Channel Integrations
+## Channel Integrations 📡
 
 Trenchsi can operate across external messaging platforms through the gateway.
 
@@ -154,7 +169,7 @@ Channel setup docs:
 - [`trenchsi/docs/channels/discord/README.md`](./trenchsi/docs/channels/discord/README.md)
 - [`trenchsi/docs/channels/slack/README.md`](./trenchsi/docs/channels/slack/README.md)
 
-## Skills, Memory, And Workspace Customization
+## Skills, Memory, And Workspace Customization 🧬
 
 The workspace is part of the agent design. Trenchsi ships with editable workspace files that define identity, memory, tools, and user-specific context.
 
@@ -175,7 +190,7 @@ Skill management commands:
 ./trenchsi skills remove <skill-name>
 ```
 
-## Scheduling And Automation
+## Scheduling And Automation ⏳
 
 Trenchsi includes built-in cron support for recurring work.
 
@@ -189,14 +204,14 @@ Examples:
 ./trenchsi cron remove <job-id>
 ```
 
-## Documentation
+## Documentation 📖
 
 - Provider setup: [`trenchsi/docs/providers.md`](./trenchsi/docs/providers.md)
 - Hooks: [`trenchsi/docs/hooks/README.md`](./trenchsi/docs/hooks/README.md)
 - Agent refactor notes: [`trenchsi/docs/agent-refactor/README.md`](./trenchsi/docs/agent-refactor/README.md)
 - Chat app docs: [`trenchsi/docs/chat-apps.md`](./trenchsi/docs/chat-apps.md)
 
-## Notes
+## Notes 📝
 
-- The package metadata inside `trenchsi/` still references `trenchlaw` in several places. The current repo name and top-level project presentation use `Trenchsi`.
+- The package metadata inside `trenchsi/` still references `trenchlaw` in several places. The repo name and top-level presentation use `Trenchsi`.
 - `.DS_Store` files are currently modified in the repository and were not changed by this README update.
