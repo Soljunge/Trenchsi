@@ -38,6 +38,7 @@ export function useLogWrapColumns() {
 
     const observer = new ResizeObserver(updateWrapColumns)
     observer.observe(content)
+    observer.observe(measure)
 
     return () => {
       observer.disconnect()

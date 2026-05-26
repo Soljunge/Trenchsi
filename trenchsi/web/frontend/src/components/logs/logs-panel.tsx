@@ -3,12 +3,17 @@ import { useTranslation } from "react-i18next"
 
 import { AnsiLogLine } from "@/components/logs/ansi-log-line"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  type WebconsoleSettings,
+  WEBCONSOLE_COLOR_SCHEMES,
+} from "@/hooks/use-webconsole-settings"
 
 type LogsPanelProps = {
   logs: string[]
   wrapColumns: number
   contentRef: RefObject<HTMLDivElement | null>
   measureRef: RefObject<HTMLSpanElement | null>
+  settings: WebconsoleSettings
 }
 
 export function LogsPanel({
@@ -16,9 +21,11 @@ export function LogsPanel({
   wrapColumns,
   contentRef,
   measureRef,
+  settings,
 }: LogsPanelProps) {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const colorScheme = WEBCONSOLE_COLOR_SCHEMES[settings.colorScheme]
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -27,21 +34,32 @@ export function LogsPanel({
   }, [logs])
 
   return (
-    <div className="relative flex-1 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 text-zinc-100">
+    <div
+      className="relative flex-1 overflow-hidden rounded-lg border"
+      style={{
+        backgroundColor: colorScheme.background,
+        borderColor: colorScheme.border,
+        color: colorScheme.foreground,
+      }}
+    >
       <ScrollArea className="h-full">
         <div
           ref={contentRef}
-          className="relative p-4 font-mono text-sm leading-relaxed"
+          className="relative p-4 font-mono leading-relaxed"
+          style={{ fontSize: settings.fontSize }}
         >
           <span
             ref={measureRef}
             aria-hidden
-            className="pointer-events-none invisible absolute font-mono text-sm"
+            className="pointer-events-none invisible absolute font-mono"
+            style={{ fontSize: settings.fontSize }}
           >
             0
           </span>
           {logs.length === 0 ? (
-            <div className="text-zinc-500 italic">{t("pages.logs.empty")}</div>
+            <div className="italic" style={{ color: colorScheme.empty }}>
+              {t("pages.logs.empty")}
+            </div>
           ) : (
             logs.map((log, index) => (
               <AnsiLogLine key={index} line={log} wrapColumns={wrapColumns} />

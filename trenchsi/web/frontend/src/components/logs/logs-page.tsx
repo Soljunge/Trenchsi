@@ -6,11 +6,13 @@ import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { useGatewayLogs } from "@/hooks/use-gateway-logs"
 import { useLogWrapColumns } from "@/hooks/use-log-wrap-columns"
+import { useWebconsoleSettings } from "@/hooks/use-webconsole-settings"
 
 export function LogsPage() {
   const { t } = useTranslation()
   const { clearLogs, clearing, logs } = useGatewayLogs()
   const { contentRef, measureRef, wrapColumns } = useLogWrapColumns()
+  const { settings } = useWebconsoleSettings()
 
   return (
     <div className="flex h-full flex-col">
@@ -35,6 +37,7 @@ export function LogsPage() {
           wrapColumns={wrapColumns}
           contentRef={contentRef}
           measureRef={measureRef}
+          settings={settings}
         />
       </div>
     </div>

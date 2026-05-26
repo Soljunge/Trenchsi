@@ -16,6 +16,13 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
+  type WebconsoleSettings,
+  WEBCONSOLE_COLOR_SCHEMES,
+  WEBCONSOLE_FONT_SIZE_MAX,
+  WEBCONSOLE_FONT_SIZE_MIN,
+} from "@/hooks/use-webconsole-settings"
+import { cn } from "@/lib/utils"
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -32,6 +39,11 @@ type UpdateCoreField = <K extends keyof CoreConfigForm>(
 type UpdateLauncherField = <K extends keyof LauncherForm>(
   key: K,
   value: LauncherForm[K],
+) => void
+
+type UpdateWebconsoleField = <K extends keyof WebconsoleSettings>(
+  key: K,
+  value: WebconsoleSettings[K],
 ) => void
 
 interface ConfigSectionCardProps {
@@ -450,6 +462,77 @@ export function LauncherSection({
           placeholder={t("pages.config.allowed_cidrs_placeholder")}
           className="min-h-[88px]"
           onChange={(e) => onFieldChange("allowedCIDRsText", e.target.value)}
+        />
+      </Field>
+    </ConfigSectionCard>
+  )
+}
+
+interface WebconsoleSectionProps {
+  settings: WebconsoleSettings
+  onFieldChange: UpdateWebconsoleField
+}
+
+export function WebconsoleSection({
+  settings,
+  onFieldChange,
+}: WebconsoleSectionProps) {
+  const { t } = useTranslation()
+
+  return (
+    <ConfigSectionCard title={t("pages.config.sections.webconsole")}>
+      <Field
+        label={t("pages.config.webconsole_color")}
+        hint={t("pages.config.webconsole_color_hint")}
+        layout="setting-row"
+        controlClassName="md:max-w-md"
+      >
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {Object.entries(WEBCONSOLE_COLOR_SCHEMES).map(([key, scheme]) => {
+            const active = settings.colorScheme === key
+
+            return (
+              <button
+                key={key}
+                type="button"
+                aria-label={t(scheme.labelKey)}
+                aria-pressed={active}
+                onClick={() =>
+                  onFieldChange(
+                    "colorScheme",
+                    key as WebconsoleSettings["colorScheme"],
+                  )
+                }
+                className={cn(
+                  "border-border bg-background flex h-10 items-center gap-2 rounded-md border px-2 text-left transition-colors hover:bg-muted/50",
+                  active && "border-primary ring-primary/30 ring-2",
+                )}
+              >
+                <span
+                  className="size-5 shrink-0 rounded-sm border"
+                  style={{
+                    backgroundColor: scheme.background,
+                    borderColor: scheme.border,
+                  }}
+                />
+                <span className="truncate text-sm">{t(scheme.labelKey)}</span>
+              </button>
+            )
+          })}
+        </div>
+      </Field>
+
+      <Field
+        label={t("pages.config.webconsole_font_size")}
+        hint={t("pages.config.webconsole_font_size_hint")}
+        layout="setting-row"
+      >
+        <Input
+          type="number"
+          min={WEBCONSOLE_FONT_SIZE_MIN}
+          max={WEBCONSOLE_FONT_SIZE_MAX}
+          value={settings.fontSize}
+          onChange={(e) => onFieldChange("fontSize", Number(e.target.value))}
         />
       </Field>
     </ConfigSectionCard>

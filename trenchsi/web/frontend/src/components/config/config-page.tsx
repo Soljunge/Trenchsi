@@ -19,6 +19,7 @@ import {
   ExecSection,
   LauncherSection,
   RuntimeSection,
+  WebconsoleSection,
 } from "@/components/config/config-sections"
 import {
   type CoreConfigForm,
@@ -32,6 +33,13 @@ import {
 } from "@/components/config/form-model"
 import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
+import {
+  DEFAULT_WEBCONSOLE_SETTINGS,
+  type WebconsoleSettings,
+  normalizeWebconsoleSettings,
+  readWebconsoleSettings,
+  writeWebconsoleSettings,
+} from "@/hooks/use-webconsole-settings"
 
 export function ConfigPage() {
   const { t } = useTranslation()
@@ -44,6 +52,11 @@ export function ConfigPage() {
     useState<LauncherForm>(EMPTY_LAUNCHER_FORM)
   const [autoStartEnabled, setAutoStartEnabled] = useState(false)
   const [autoStartBaseline, setAutoStartBaseline] = useState(false)
+  const [webconsoleForm, setWebconsoleForm] = useState<WebconsoleSettings>(
+    DEFAULT_WEBCONSOLE_SETTINGS,
+  )
+  const [webconsoleBaseline, setWebconsoleBaseline] =
+    useState<WebconsoleSettings>(DEFAULT_WEBCONSOLE_SETTINGS)
   const [saving, setSaving] = useState(false)
 
   const { data, isLoading, error } = useQuery({
@@ -70,6 +83,12 @@ export function ConfigPage() {
     queryKey: ["system", "autostart"],
     queryFn: getAutoStartStatus,
   })
+
+  useEffect(() => {
+    const parsed = readWebconsoleSettings()
+    setWebconsoleForm(parsed)
+    setWebconsoleBaseline(parsed)
+  }, [])
 
   useEffect(() => {
     if (!data) return
@@ -99,7 +118,10 @@ export function ConfigPage() {
   const launcherDirty =
     JSON.stringify(launcherForm) !== JSON.stringify(launcherBaseline)
   const autoStartDirty = autoStartEnabled !== autoStartBaseline
-  const isDirty = configDirty || launcherDirty || autoStartDirty
+  const webconsoleDirty =
+    JSON.stringify(webconsoleForm) !== JSON.stringify(webconsoleBaseline)
+  const isDirty =
+    configDirty || launcherDirty || autoStartDirty || webconsoleDirty
 
   const autoStartSupported = autoStartStatus?.supported !== false
   const autoStartHint = autoStartError
@@ -122,10 +144,18 @@ export function ConfigPage() {
     setLauncherForm((prev) => ({ ...prev, [key]: value }))
   }
 
+  const updateWebconsoleField = <K extends keyof WebconsoleSettings>(
+    key: K,
+    value: WebconsoleSettings[K],
+  ) => {
+    setWebconsoleForm((prev) => ({ ...prev, [key]: value }))
+  }
+
   const handleReset = () => {
     setForm(baseline)
     setLauncherForm(launcherBaseline)
     setAutoStartEnabled(autoStartBaseline)
+    setWebconsoleForm(webconsoleBaseline)
     toast.info(t("pages.config.reset_success"))
   }
 
@@ -279,6 +309,13 @@ export function ConfigPage() {
         queryClient.setQueryData(["system", "autostart"], status)
       }
 
+      if (webconsoleDirty) {
+        const normalized = normalizeWebconsoleSettings(webconsoleForm)
+        writeWebconsoleSettings(normalized)
+        setWebconsoleForm(normalized)
+        setWebconsoleBaseline(normalized)
+      }
+
       toast.success(t("pages.config.save_success"))
     } catch (err) {
       toast.error(
@@ -323,6 +360,11 @@ export function ConfigPage() {
               <AgentDefaultsSection form={form} onFieldChange={updateField} />
 
               <RuntimeSection form={form} onFieldChange={updateField} />
+
+              <WebconsoleSection
+                settings={webconsoleForm}
+                onFieldChange={updateWebconsoleField}
+              />
 
               <ExecSection form={form} onFieldChange={updateField} />
 
