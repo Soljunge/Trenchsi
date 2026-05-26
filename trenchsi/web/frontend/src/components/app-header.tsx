@@ -96,7 +96,12 @@ export function AppHeader() {
           <IconMenu2 />
         </SidebarTrigger>
         <div className="hidden w-36 shrink-0 items-center sm:flex">
-          <Link to="/">
+          <Link to="/" className="flex items-center gap-2">
+            <img
+              src="/favicon-96x96.png"
+              alt=""
+              className="size-8 shrink-0 rounded-md object-cover"
+            />
             <span className="text-foreground text-lg font-semibold tracking-[0.18em] uppercase">
               Trenchsi
             </span>
